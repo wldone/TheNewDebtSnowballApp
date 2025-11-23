@@ -1,0 +1,100 @@
+﻿@model QuickAnalysisPersonal
+@{
+    ViewData["Title"] = "Quick Analysis - Step 1";
+}
+
+<div class="container my-4 quick-analysis">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <h2 class="text-center mb-4 fw-bold">Quick Analysis</h2>
+
+            <!-- Step header bar -->
+            <div class="qa-steps d-flex justify-content-center mb-4">
+                <div class="qa-step active">
+                    <span class="qa-step-number">Step 1</span>
+                    <span class="qa-step-label">Personal Info</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 2</span>
+                    <span class="qa-step-label">Debts</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 3</span>
+                    <span class="qa-step-label">Analysis</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 4</span>
+                    <span class="qa-step-label">Order</span>
+                </div>
+            </div>
+
+            <p class="mb-4">
+                This tool is intended to create a snapshot of your financial outlook. While it is not
+                exhaustive it is extremely informative. When we are done analysing the information you
+                provide we can email you a copy for your records.
+            </p>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <form asp-action="Step1Personal" asp-controller="QuickAnalysis" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3 row align-items-center">
+                            <label asp-for="FirstName" class="col-sm-3 col-form-label fw-semibold"></label>
+                            <div class="col-sm-9">
+                                <input asp-for="FirstName" class="form-control qa-input" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row align-items-center">
+                            <label asp-for="LastName" class="col-sm-3 col-form-label fw-semibold"></label>
+                            <div class="col-sm-9">
+                                <input asp-for="LastName" class="form-control qa-input" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row align-items-center">
+                            <label asp-for="Email" class="col-sm-3 col-form-label fw-semibold"></label>
+                            <div class="col-sm-9">
+                                <input asp-for="Email" class="form-control qa-input" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 row align-items-center">
+                            <label asp-for="Phone" class="col-sm-3 col-form-label fw-semibold"></label>
+                            <div class="col-sm-9">
+                                <input asp-for="Phone" class="form-control qa-input" />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 small text-muted">
+                            <strong>Privacy Statement</strong> – All information you provide is kept
+                            confidential and will never be used for any purpose other than to provide your
+                            free financial analysis. Your information will never be sold to a third party
+                            for any reason.
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="submit" class="btn btn-next px-5">
+                                Next
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

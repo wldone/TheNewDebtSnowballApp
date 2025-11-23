@@ -1,0 +1,44 @@
+﻿@model DebtSnowballApp.Models.SnowballComparisonViewModel
+@using DebtSnowballApp.Models
+
+<h2>Snowball vs Avalanche Comparison</h2>
+<div class="alert alert-info">
+    <strong>Summary:</strong><br />
+    <span class="d-block">
+        Snowball → Interest: @Model.SnowballTotalInterest.ToString("C"), Time: @Model.SnowballTotalMonths months
+    </span>
+    <span class="d-block">
+        Avalanche → Interest: @Model.AvalancheTotalInterest.ToString("C"), Time: @Model.AvalancheTotalMonths months
+    </span>
+
+    @{
+        var winner = Model.SnowballTotalInterest < Model.AvalancheTotalInterest
+        ? "Snowball saves more interest."
+        : Model.SnowballTotalInterest > Model.AvalancheTotalInterest
+        ? "Avalanche saves more interest."
+        : "Both strategies cost the same in interest.";
+
+        if (Model.SnowballTotalMonths != Model.AvalancheTotalMonths)
+        {
+            winner += " ";
+            winner += Model.SnowballTotalMonths < Model.AvalancheTotalMonths
+            ? "Snowball is also faster."
+            : "Avalanche is also faster.";
+        }
+    }
+
+    <strong class="d-block mt-2">@winner</strong>
+</div>
+
+<p><strong>Monthly Budget:</strong> @Model.MonthlyBudget.ToString("C")</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <h4>Snowball Strategy</h4>
+        @Html.Partial("_StrategyTable", Model.Snowball)
+    </div>
+    <div class="col-md-6">
+        <h4>Avalanche Strategy</h4>
+        @Html.Partial("_StrategyTable", Model.Avalanche)
+    </div>
+</div>

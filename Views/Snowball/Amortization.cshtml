@@ -1,0 +1,33 @@
+﻿@model List<DebtSnowballApp.Models.AmortizationEntry>
+
+<h3>Amortization Schedule</h3>
+
+<table class="table table-sm table-bordered">
+    <thead>
+        <tr>
+            <th>Month</th>
+            <th>Starting Balance</th>
+            <th>Interest</th>
+            <th>Payment</th>
+            <th>Ending Balanc***e</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entry in Model)
+        {
+            <tr class="@(entry.IsTarget ? "table-warning" : "")">
+                <td>@entry.Month</td>
+                <td>@entry.StartingBalance.ToString("C")</td>
+                <td>@entry.Interest.ToString("C")</td>
+                <td>
+                    @entry.Payment.ToString("C")
+                    @if (entry.IsTarget)
+                    {
+                        <span title="Target debt this month" class="ms-2 text-success">🎯</span>
+                    }
+                </td>
+                <td>@entry.EndingBalance.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>

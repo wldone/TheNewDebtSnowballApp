@@ -1,0 +1,75 @@
+﻿@using DebtSnowballApp.Areas.Admin.ViewModels
+@model AdminUserDetailsVm
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h5 mb-0">User Profile</h2>
+    <button id="toggleProfileBtn"
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#profileInfo"
+            aria-expanded="false"
+            aria-controls="profileInfo">
+        <span class="btn-label">Show profile info</span>
+    </button>
+</div>
+
+<div id="profileInfo" class="collapse">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="fw-semibold small text-muted">Lockout</div>
+                    @if (!Model.LockoutEnabled)
+                    {
+                        <span class="badge bg-secondary">Lockout disabled</span>
+                    }
+                    else if (Model.IsLockedOut)
+                    {
+                        <span class="badge bg-danger">Locked</span>
+                        <div class="small text-muted">
+                            until @Model.LockoutEnd?.ToLocalTime().ToString("g")
+                        </div>
+
+                        <form asp-area="Admin" asp-controller="Users" asp-action="Unlock" method="post" class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">Unlock user</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Not locked</span>
+                    }
+                </div>
+
+                <div class="col-md-6">
+                    <div class="fw-semibold small text-muted">Failed sign-ins</div>
+                    <div>@Model.AccessFailedCount</div>
+                </div>
+            </div>
+                <div class="col-md-6">
+                    <div class="fw-semibold small text-muted">Email</div>
+                    <div>@Model.Email</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="fw-semibold small text-muted">User ID</div>
+                    <div class="text-monospace">@Model.Id</div>
+                </div>
+                @if (Model.Roles?.Any() == true)
+                {
+                    <div class="col-md-6">
+                        <div class="fw-semibold small text-muted">Roles</div>
+                        <div>@string.Join(", ", Model.Roles)</div>
+                    </div>
+                }
+                @if (Model.PartnerName != null)
+                {
+                    <div class="col-md-6">
+                        <div class="fw-semibold small text-muted">Partner</div>
+                        <div>@Model.PartnerName</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>

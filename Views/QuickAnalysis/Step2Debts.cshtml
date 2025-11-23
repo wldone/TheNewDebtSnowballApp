@@ -1,0 +1,255 @@
+﻿@model DebtSnowballApp.Models.QuickAnalysisDebtsViewModel
+
+@{
+    ViewData["Title"] = "Quick Analysis - Step 2";
+}
+
+<div class="container my-4 quick-analysis">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <h2 class="text-center mb-4 fw-bold">Quick Analysis</h2>
+
+
+            <!-- Step header bar -->
+            <div class="qa-steps d-flex justify-content-center mb-4">
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 1</span>
+                    <span class="qa-step-label">Personal Info</span>
+                </div>
+                <div class="qa-step active">
+                    <span class="qa-step-number">Step 2</span>
+                    <span class="qa-step-label">Debts</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 3</span>
+                    <span class="qa-step-label">Analysis</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 4</span>
+                    <span class="qa-step-label">Order</span>
+                </div>
+            </div>
+            <p class="mb-2">
+                The first step on your road to financial freedom is to evaluate where you stand in
+                relationship to your current debt elimination plan. Information, assets, liabilities,
+                and debt structure are entered into the system and a customized debt elimination plan
+                is prepared for you.
+            </p>
+
+            <p class="mb-2">
+                <span class ="fw-semibold">
+                    Complete this information as accurately and completely as possible.</span>
+                The analysis provided will only be as accurate as the data you enter.
+            </p>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- MAIN FORM: AddDebt / Previous / Next -->
+                    <form asp-action="Step2Debts" asp-controller="QuickAnalysis" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-3">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 140px;">Type of Debt</th>
+                                        <th style="width: 130px;" class="text-end">Balance</th>
+                                        <th style="width: 130px;" class="text-end">Rate (%)</th>
+                                        <th style="width: 150px;" class="text-end">Payment</th>
+                                        <th style="width: 90px;" class="text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- New debt entry row -->
+                                    <tr>
+                                        <td>
+                                            <select asp-for="NewDebt.Name"
+                                                    asp-items="Model.DebtTypeOptions"
+                                                    class="form-select qa-input">
+                                            </select>
+                                            <span asp-validation-for="NewDebt.Name" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="NewDebt.Balance"
+                                                   class="form-control qa-input text-end"
+                                                   type="number"
+                                                   min="0"
+                                                   step="1"
+                                                   inputmode="numeric" />
+                                            <span asp-validation-for="NewDebt.Balance" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="NewDebt.InterestRate"
+                                                   class="form-control qa-input text-end"
+                                                   type="number"
+                                                   min="0"
+                                                   max="100"
+                                                   step="0.01"
+                                                   inputmode="decimal" />
+                                            <span asp-validation-for="NewDebt.InterestRate" class="text-danger"></span>
+                                        </td>
+                                        <td>
+                                            <input asp-for="NewDebt.MinimumPayment"
+                                                   class="form-control qa-input text-end"
+                                                   type="number"
+                                                   min="0"
+                                                   step="1"
+                                                   inputmode="numeric" />
+                                            <span asp-validation-for="NewDebt.MinimumPayment" class="text-danger"></span>
+                                        </td>
+                                        <!-- empty cell for Remove col -->
+                                        <td></td>
+                                    </tr>
+
+                                    <!-- Add Debt button row -->
+                                    <tr>
+                                        <td colspan="5">
+                                            <button type="submit"
+                                                    name="submitAction"
+                                                    value="AddDebt"
+                                                    class="btn btn-add-debt px-4 mt-2 me-2">
+                                                Add Debt
+                                            </button>
+
+                                            <button type="submit"
+                                                    name="submitAction"
+                                                    value="LoadDemo"
+                                                    class="btn btn-outline-secondary px-4 mt-2">
+                                                Load Demo Debts
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+@*                     @if (TempData["QaMessage"] is string msg && !string.IsNullOrWhiteSpace(msg))
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            @msg
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    } *@
+                    @if (TempData.Peek("LastDeletedDebt") is string)
+                    {
+                        <form asp-action="UndoDeleteQaDebt"
+                              asp-controller="QuickAnalysis"
+                              method="post"
+                              class="mb-3">
+                            @Html.AntiForgeryToken()
+                            <div class="alert alert-warning d-flex justify-content-between align-items-center py-2">
+                                <span>Debt removed.</span>
+                                <button type="submit" class="btn btn-sm btn-outline-dark">
+                                    Undo
+                                </button>
+                            </div>
+                        </form>
+                    }
+
+                    <!-- Existing debts list is OUTSIDE the main form -->
+                    @if (Model.ExistingDebts != null && Model.ExistingDebts.Any())
+                    {
+                        <hr class="my-4" />
+                        <h5 class="mb-3">Existing Debts</h5>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th style="width: 140px;">Type of Debt</th>
+                                        <th style="width: 130px;" class="text-end">Balance</th>
+                                        <th style="width: 130px;" class="text-end">Rate (%)</th>
+                                        <th style="width: 150px;" class="text-end">Payment</th>
+                                        <th style="width: 90px;" class="text-center"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in Model.ExistingDebts)
+                                    {
+                                        <tr>
+                                            <td>@d.Name</td>
+                                            <td class="text-end">@d.Balance.ToString("C0")</td>
+                                            <td class="text-end">@d.InterestRate.ToString("0.00")%</td>
+                                            <td class="text-end">@d.MinimumPayment.ToString("C0")</td>
+                                            <td class="text-center">
+                                                <form id="delete-form-@d.Id"
+                                                      asp-action="DeleteQaDebt"
+                                                      asp-controller="QuickAnalysis"
+                                                      asp-route-id="@d.Id"
+                                                      method="post"
+                                                      class="d-inline">
+                                                    @Html.AntiForgeryToken()
+
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            onclick="return fadeAndDelete(this, '@d.Id');">
+                                                        Remove
+                                                    </button>
+                                                </form>
+                                            </td>
+
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    <!-- FORM 2: Previous / Next at the very bottom -->
+                    <form asp-action="Step2Debts" asp-controller="QuickAnalysis" method="post" class="mt-4">
+                        @Html.AntiForgeryToken()
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit"
+                                    name="submitAction"
+                                    value="Previous"
+                                    class="btn btn-prev me-3 px-4">
+                                Previous
+                            </button>
+
+                            <button type="submit"
+                                    name="submitAction"
+                                    value="Next"
+                                    class="btn btn-next px-4">
+                                Next
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        function fadeAndDelete(button, id) {
+            const row = button.closest("tr");
+            if (!row) {
+                document.getElementById("delete-form-" + id).submit();
+                return false;
+            }
+
+            // Add highlight class
+            row.classList.add("qa-row-deleting");
+
+            // After a short delay, fade it out
+            setTimeout(() => {
+                row.classList.add("qa-row-faded");
+            }, 50);
+
+            // After animation, submit the form
+            setTimeout(() => {
+                const form = document.getElementById("delete-form-" + id);
+                if (form) form.submit();
+            }, 300); // matches CSS transition
+
+            return false; // prevent normal submit
+        }
+    </script>
+}

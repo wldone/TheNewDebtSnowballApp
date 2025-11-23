@@ -1,0 +1,22 @@
+﻿@model DebtSnowballApp.Models.Partner
+@{
+    ViewData["Title"] = "Create Partner";
+}
+<div class="container py-4">
+    <h1 class="mb-3">Create Partner</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <partial name="_Form" model="Model" />
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+ }

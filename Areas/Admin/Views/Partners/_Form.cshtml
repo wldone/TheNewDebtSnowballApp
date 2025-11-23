@@ -1,0 +1,36 @@
+﻿@model DebtSnowballApp.Models.Partner
+<div class="row g-3">
+    <div class="col-12 col-md-6">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <label asp-for="Website" class="form-label"></label>
+        <input asp-for="Website" class="form-control" placeholder="https://example.com" />
+        <span asp-validation-for="Website" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <label asp-for="SupportEmail" class="form-label"></label>
+        <input asp-for="SupportEmail" class="form-control" />
+        <span asp-validation-for="SupportEmail" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <label asp-for="SupportPhone" class="form-label"></label>
+        <input asp-for="SupportPhone" class="form-control" />
+        <span asp-validation-for="SupportPhone" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <div class="form-check">
+            <input class="form-check-input" asp-for="Active" />
+            <label class="form-check-label" asp-for="Active"></label>
+        </div>
+    </div>
+
+    @* concurrency token *@
+    <input type="hidden" asp-for="RowVersion" />
+</div>

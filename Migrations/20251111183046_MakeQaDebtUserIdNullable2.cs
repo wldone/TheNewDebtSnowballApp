@@ -1,0 +1,31 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace DebtSnowballApp.Migrations
+{
+    /// <inheritdoc />
+    public partial class MakeQaDebtUserIdNullable2 : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<decimal>(
+                name: "BegBalance",
+                table: "QaDebtItems",
+                type: "decimal(18,2)",
+                precision: 18,
+                scale: 2,
+                nullable: false,
+                defaultValue: 0m);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "BegBalance",
+                table: "QaDebtItems");
+        }
+    }
+}

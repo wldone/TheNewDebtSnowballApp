@@ -1,0 +1,43 @@
+﻿@model DebtSnowballApp.Areas.Admin.ViewModels.UserCreateVm
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="container py-4">
+    <h1 class="h3 mb-3">Create User</h1>
+
+    <form asp-action="Create" method="post" class="card p-3 shadow-sm">
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Partner</label>
+            <select asp-for="PartnerId" asp-items="Model.Partners" class="form-select">
+                <option value="">-- Select Partner --</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select asp-for="Role" asp-items="Model.Roles" class="form-select">
+                <option value="">-- None --</option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">Create</button>
+            <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+ }

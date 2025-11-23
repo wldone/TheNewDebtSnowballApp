@@ -1,0 +1,29 @@
+﻿@model DebtSnowballApp.Models.QaDebtItem
+@{
+    ViewData["Title"] = "Delete Quick Analysis Debt";
+}
+
+<div class="container py-4">
+    <h2>@ViewData["Title"]</h2>
+
+    <div class="alert alert-warning">
+        Are you sure you want to delete <strong>@Model.Name</strong>?
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">Balance</dt>
+        <dd class="col-sm-9">@Model.Balance.ToString("C")</dd>
+
+        <dt class="col-sm-3">Interest Rate</dt>
+        <dd class="col-sm-9">@Model.InterestRate %</dd>
+
+        <dt class="col-sm-3">Minimum Payment</dt>
+        <dd class="col-sm-9">@Model.MinimumPayment.ToString("C")</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>

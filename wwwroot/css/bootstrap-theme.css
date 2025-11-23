@@ -1,0 +1,83 @@
+
+/* Bootstrap Theme Extension based on #36476b */
+body {
+    color: #36476b;
+}
+
+.text-theme {
+    color: #36476b !important;
+}
+
+.bg-theme {
+    background-color: #36476b !important;
+    color: #fff !important;
+}
+
+.border-theme {
+    border-color: #36476b !important;
+}
+
+.btn-theme {
+    background-color: #36476b !important;
+    color: #fff !important;
+    border: 1px solid #36476b !important;
+}
+
+.btn-theme:hover {
+    background-color: #2c3a59 !important;
+    color: #fff !important;
+}
+
+.btn-outline-theme {
+    background-color: transparent !important;
+    color: #36476b !important;
+    border: 1px solid #36476b !important;
+}
+
+.btn-outline-theme:hover {
+    background-color: #36476b !important;
+    color: #fff !important;
+}
+
+.table-theme thead th {
+    background-color: #36476b !important;
+    color: #fff !important;
+    border-color: #2c3a59 !important;
+}
+    /* Make links in table headers white */
+    .table-theme thead th a {
+        color: white !important;
+        text-decoration: none;
+    }
+
+        .table-theme thead th a:hover {
+            text-decoration: underline;
+        }
+/* Themed text color in table body cells */
+.table-theme tbody td {
+    color: #36476b !important;
+}
+
+
+.table-striped-theme tbody tr:nth-of-type(odd) {
+    background-color: rgba(54, 71, 107, 0.05) !important;
+}
+
+.heading-theme h1,
+.heading-theme h2,
+.heading-theme h3,
+.heading-theme h4,
+.heading-theme h5,
+.heading-theme h6 {
+    color: #36476b !important;
+    font-weight: 600;
+}
+
+.link-theme {
+    color: #36476b !important;
+    text-decoration: none;
+}
+
+.link-theme:hover {
+    text-decoration: underline;
+}

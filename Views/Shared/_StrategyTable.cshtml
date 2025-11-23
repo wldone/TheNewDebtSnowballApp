@@ -1,0 +1,28 @@
+﻿@using DebtSnowballApp.Models
+@model List<DebtSnowballApp.Models.SnowballResult>
+
+<table class="table table-sm table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Balance</th>
+            <th>Rate</th>
+            <th>Min. Payment</th>
+            <th>Months</th>
+            <th>Interest</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var d in Model)
+        {
+            <tr>
+                <td>@d.Name</td>
+                <td>@d.StartingBalance.ToString("C")</td>
+                <td>@d.InterestRate.ToString("0.#")%</td>
+                <td>@d.MinimumPayment.ToString("C")</td>
+                <td>@d.MonthsToPayoff</td>
+                <td>@d.TotalInterestPaid.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>

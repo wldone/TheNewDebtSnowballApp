@@ -1,0 +1,124 @@
+﻿@using DebtSnowballApp.Models.ViewModels
+@model QuickAnalysisViewModel
+@{
+    ViewData["Title"] = "Quick Analysis (QA Debts)";
+}
+
+<div class="container py-3">
+    <h2 class="mb-3">Quick Analysis @if(Model.IsDemo){
+    <span class="badge bg-secondary">Demo</span>
+        }
+</h2>
+
+    <form asp-action="Quick" method="get" class="row g-2 mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Strategy</label>
+            <select name="strategy" class="form-select">
+                <option value="Snowball" selected="@(Model.Strategy == "Snowball")">Snowball (smallest balance first)</option>
+                <option value="Avalanche" selected="@(Model.Strategy == "Avalanche")">Avalanche (highest rate first)</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Extra Payment</label>
+            <input name="extraPayment" type="number" step="10" class="form-control" value="@Model.ExtraPayment" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-outline-primary w-100">Recalculate</button>
+        </div>
+    </form>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="fw-bold">Total Balance</div>
+                    <div>@Model.TotalBalance.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="fw-bold">Monthly Minimums</div>
+                    <div>@Model.TotalMinPayments.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="fw-bold">Weighted APR</div>
+                    <div>@Model.WeightedAprPercent.ToString("0.00")% </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="fw-bold">Extra Payment</div>
+                    <div>@Model.ExtraPayment.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="mb-2">Debts</h5>
+    <table class="table table-sm table-striped mb-4">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th class="text-end">Balance</th>
+                <th class="text-end">Rate %</th>
+                <th class="text-end">Minimum</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Debts)
+            {
+                <tr>
+                    <td>@d.Name</td>
+                    <td class="text-end">@d.Balance.ToString("C")</td>
+                    <td class="text-end">@d.InterestRate.ToString("0.00")</td>
+                    <td class="text-end">@d.MinimumPayment.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h5 class="mb-2">Quick Estimates</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="fw-bold">Snowball</div>
+                        <span class="badge bg-primary">Smallest Balance</span>
+                    </div>
+                    <div class="mt-2">Estimated Months: <strong>@Model.EstMonthsSnowball</strong></div>
+                    <div>Total Interest: <strong>@((Model.EstInterestSnowball ?? 0m).ToString("C"))</strong></div>
+                    <div class="mt-3">
+                        <a asp-action="Index" asp-route-strategy="Snowball" asp-route-extraPayment="@Model.ExtraPayment"
+                           class="btn btn-primary w-100">View Detailed Plan (Snowball)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="fw-bold">Avalanche</div>
+                        <span class="badge bg-danger">Highest Rate</span>
+                    </div>
+                    <div class="mt-2">Estimated Months: <strong>@Model.EstMonthsAvalanche</strong></div>
+                    <div>Total Interest: <strong>@((Model.EstInterestAvalanche ?? 0m).ToString("C"))</strong></div>
+                    <div class="mt-3">
+                        <a asp-action="Index" asp-route-strategy="Avalanche" asp-route-extraPayment="@Model.ExtraPayment"
+                           class="btn btn-danger w-100">View Detailed Plan (Avalanche)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,311 @@
+﻿@using DebtSnowballApp.Models
+@using System.Text.Json
+
+@model List<DebtSnowballApp.Models.SnowballResult>
+@{
+	ViewData["Title"] = ViewBag.Strategy switch
+	{
+		PayoffStrategy.Avalanche => "Avalanche Payoff Plan",
+		_ => "Snowball Payoff Plan" // Default or Snowball
+	};
+	var budget = ViewBag.MonthlyBudget;
+	int maxMonths = Model.Max(d => d.MonthsToPayoff);
+	DateTime debtFreeDate = DateTime.Today.AddMonths(maxMonths);
+}
+
+<h2>@ViewData["Title"]</h2>
+<p><strong>Estimated Debt-Free Date:</strong> @debtFreeDate.ToString("MMMM yyyy")</p>
+@if (Model.Any())
+{
+	<p><strong>Monthly Budget:</strong> @budget.ToString("C")</p>
+
+	<table class="table table-striped table-bordered">
+		<thead class="table-light">
+			<tr>
+				<th>Name</th>
+				<th>Starting Balance</th>
+				<th>Interest Rate</th>
+				<th>Minimum Payment</th>
+				<th>Months to Payoff</th>
+				<th>Total Interest</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var debt in Model)
+			{
+				<tr>
+					<td>@debt.Name</td>
+					<td>@debt.StartingBalance.ToString("C")</td>
+					<td>@debt.InterestRate.ToString("0.#")%</td>
+					<td>@debt.MinimumPayment.ToString("C")</td>
+					<td>@debt.MonthsToPayoff</td>
+					<td>@debt.TotalInterestPaid.ToString("C")</td>
+					<td>
+						<a id="toggle-@debt.Name.Replace(" ", "")" class="btn btn-link btn-sm toggle-schedule"
+						   data-bs-toggle="collapse"
+						   href="#amort-@debt.Name.Replace(" ", "")"
+						   role="button"
+						   aria-expanded="false"
+						   aria-controls="amort-@debt.Name.Replace(" ", "")">
+							View Schedule
+						</a>
+					</td>
+				</tr>
+				<tr class="collapse" id="amort-@debt.Name.Replace(" ", "")">
+					<td colspan="6">
+						<table class="table table-sm table-bordered mb-0">
+							<thead class="table-light">
+								<tr>
+									<th>Month</th>
+									<th>Start</th>
+									<th>Payment</th>
+									<th>Interest</th>
+									<th>End</th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var row in debt.AmortizationSchedule)
+								{
+									<tr>
+										<td>
+											@row.Month
+											@if (row.IsTarget)
+											{
+												<span title="Target debt this month" class="ms-2 text-success">🎯</span>
+											}
+										</td>
+										<td>@row.StartingBalance.ToString("C")</td>
+										<td>@row.Payment.ToString("C")</td>
+										<td>@row.Interest.ToString("C")</td>
+										<td>@row.EndingBalance.ToString("C")</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			}
+		</tbody>
+		<tfoot>
+			<tr class="table-light fw-bold">
+				<td>Total</td>
+				<td>@Model.Sum(d => d.StartingBalance).ToString("C")</td> <!-- = BegBalance -->
+				<td></td>
+				<td>@Model.Sum(d => d.MinimumPayment).ToString("C")</td>
+				<td></td>
+				<td>@Model.Sum(d => d.TotalInterestPaid).ToString("C")</td>
+				<td></td>
+			</tr>
+		</tfoot>
+
+	</table>
+}
+else
+{
+	<div class="alert alert-warning">@ViewBag.Message</div>
+}
+<form method="post" asp-action="SavePreferences" asp-controller="Snowball" class="mb-4">
+	<div class="row g-2">
+		<div class="col-md-4">
+			<label class="form-label">Strategy</label>
+			<select name="strategy" class="form-select">
+				<option value="Snowball" selected="@((PayoffStrategy)ViewBag.Strategy == PayoffStrategy.Snowball)">Snowball</option>
+				<option value="Avalanche" selected="@((PayoffStrategy)ViewBag.Strategy == PayoffStrategy.Avalanche)">Avalanche</option>
+				<option value="Compare">Compare Both</option>
+			</select>
+		</div>
+		<div class="col-md-4">
+			<label class="form-label">Monthly Budget</label>
+			<input type="number" step="0.01" name="budget" value="@ViewBag.MonthlyBudget" class="form-control" />
+		</div>
+		<div class="col-md-4 d-flex align-items-end justify-content-between">
+			<button type="submit" name="action" value="run" class="btn btn-primary">Run Strategy</button>
+		</div>
+	</div>
+</form>
+
+<div class="row mb-3">
+	<div class="col-auto">
+		<button type="submit"
+				name="action"
+				value="save"
+				class="btn btn-outline-secondary @(ViewBag.Strategy?.ToString() == "Compare" ? "opacity-75" : "")"
+				title="Compare Both cannot be saved as a preferred strategy."
+		@(ViewBag.Strategy?.ToString() == "Compare" ? "disabled" : "")>
+			Save Preferences
+		</button>
+	</div>
+	<div class="col-auto">
+		<button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#chartCollapse" aria-expanded="false" aria-controls="chartCollapse">
+			Show/Hide Chart
+		</button>
+	</div>
+	<div class="col-auto">
+		<button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#amortCollapse" aria-expanded="false" aria-controls="amortCollapse">
+			Show/Hide Full Amortization
+		</button>
+	</div>
+</div>
+
+<div class="collapse" id="amortCollapse">
+	@foreach (var debt in Model)
+	{
+		<h5>@debt.Name</h5>
+		<table class="table table-sm table-bordered">
+			<thead class="table-light">
+				<tr>
+					<th>Month</th>
+					<th>Start</th>
+					<th>Payment</th>
+					<th>Interest</th>
+					<th>End</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var row in debt.AmortizationSchedule)
+				{
+					<tr class="@(row.IsTarget ? "table-warning" : "")">
+						<td>@row.Month
+							@if (row.IsTarget)
+							{
+								<span title="Target debt this month" class="ms-2 text-success">🎯</span>
+							}
+						</td>
+						<td>@row.StartingBalance.ToString("C")</td>
+						<td>
+							@row.Payment.ToString("C")
+						</td>
+						<td>@row.Interest.ToString("C")</td>
+						<td>@row.EndingBalance.ToString("C")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+</div>
+
+
+<div class="collapse" id="chartCollapse">
+	<div id="chartWrapper">
+		<canvas id="debtChart" height="400"></canvas>
+	</div>
+</div>
+
+
+
+@{
+	// Distinct sorted labels
+	var chartLabels = Model
+		.SelectMany(d => d.AmortizationSchedule)
+		.Select(r => r.Month)
+		.Distinct()
+		.OrderBy(m => m)
+		.ToList();
+
+	// Build datasets
+
+    var dataSets = Model.Select(debt => new
+    {
+        label = debt.Name,
+        data = debt.AmortizationSchedule
+            .OrderBy(r => r.Month)
+            .Select(r => Math.Round(r.EndingBalance, 2)),
+        fill = false,
+        tension = 0.1
+    }).ToList();
+
+    var jsonDataSets = JsonSerializer.Serialize(dataSets);
+}
+
+	<script>
+		const chartLabels = @Html.Raw(JsonSerializer.Serialize(chartLabels));
+		const chartDataSets = @Html.Raw(jsonDataSets);
+
+		// Assign random color to each dataset
+		chartDataSets.forEach(ds => {
+			ds.borderColor = getRandomColor();
+		});
+
+	function getRandomColor() {
+		return 'hsl(' + Math.floor(Math.random() * 360) + ', 70%, 60%)';
+	}
+
+	const ctx = document.getElementById('debtChart').getContext('2d');
+	new Chart(ctx, {
+		type: 'line',
+		data: {
+			labels: chartLabels,
+			datasets: chartDataSets
+		},
+		options: {
+			responsive: true,
+			plugins: {
+				title: {
+					display: true,
+					text: 'Debt Payoff Timeline'
+				},
+				legend: {
+					position: 'bottom'
+				}
+			},
+			scales: {
+				y: {
+					title: {
+						display: true,
+						text: 'Remaining Balance ($)'
+					}
+				},
+				x: {
+					title: {
+						display: true,
+						text: 'Month'
+					}
+				}
+			}
+		}
+	});
+</script>
+
+<script>
+		document.getElementById('amortCollapse')?.addEventListener('shown.bs.collapse', function () {
+		this.scrollIntoView({ behavior: 'smooth' });
+	});
+
+	document.getElementById("strategyForm").addEventListener("submit", function (e) {
+		var selected = document.getElementById("strategySelect").value;
+		if (selected === "Compare") {
+			e.preventDefault();
+			const budget = document.querySelector('[name="monthlyBudget"]').value;
+			window.location.href = `/Snowball/Compare?monthlyBudget=${budget}`;
+		}
+	});
+</script>
+<script>
+	const chartCollapse = document.getElementById("chartCollapse");
+	chartCollapse?.addEventListener("shown.bs.collapse", function () {
+		const target = document.getElementById("chartWrapper");
+		if (target) {
+			target.scrollIntoView({ behavior: "smooth", block: "start" });
+		}
+	});
+</script>
+
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		document.querySelectorAll(".collapse").forEach(section => {
+			section.addEventListener("show.bs.collapse", function () {
+				const toggleId = this.id;
+				const link = document.querySelector(`a[href="#${toggleId}"]`);
+				if (link) link.textContent = "Close Schedule";
+			});
+
+			section.addEventListener("hide.bs.collapse", function () {
+				const toggleId = this.id;
+				const link = document.querySelector(`a[href="#${toggleId}"]`);
+				if (link) link.textContent = "View Schedule";
+			});
+		});
+	});
+</script>
+

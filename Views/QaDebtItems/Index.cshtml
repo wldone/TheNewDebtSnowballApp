@@ -1,0 +1,172 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+
+@model IEnumerable<DebtSnowballApp.Models.QaDebtItem>
+
+@{
+    ViewData["Title"] = "QA Debt Review";
+    string? sortOrder = Context.Request.Query["sortOrder"];
+}
+
+<h2 class="mb-2">@ViewData["Title"]</h2>
+
+    <i class="bi bi-exclamation-triangle"></i> This is the <strong>QA view</strong> of your debt data.
+<div class="d-flex flex-wrap gap-2 mb-3">
+
+    <!-- Quick Analysis: uses current QA debts if logged-in; demo if anon -->
+    <a asp-controller="QaSnowball"
+       asp-action="Quick"
+       asp-route-strategy="Snowball"
+       asp-route-extraPayment="0"
+       class="btn btn-outline-primary">
+        Quick Analysis (Snowball)
+    </a>
+
+    <a asp-controller="QaSnowball"
+       asp-action="Quick"
+       asp-route-strategy="Avalanche"
+       asp-route-extraPayment="0"
+       class="btn btn-outline-danger">
+        Quick Analysis (Avalanche)
+    </a>
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <!-- Logged-in: fill QA from real debts, optional overwrite -->
+        <form asp-action="CopyFromMyDebts" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="overwrite" value="true" />
+            <button type="submit" class="btn btn-success">
+                Fill QA from My Debts (overwrite)
+            </button>
+        </form>
+
+        <form asp-action="ClearMyQa" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-secondary">
+                Clear My QA Debts
+            </button>
+        </form>
+    }
+    else
+    {
+        <!-- Anonymous: point them to Quick (which uses demo data) -->
+        <a asp-controller="QaSnowball"
+           asp-action="Quick"
+           asp-route-strategy="Snowball"
+           class="btn btn-secondary">
+            Try Quick with Demo Data
+        </a>
+    }
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Alert"] != null)
+{
+    <div class="alert alert-warning">@TempData["Alert"]</div>
+}
+<div class="table-responsive">
+    <table class="table table-theme">
+
+        <thead class="table-light">
+            <tr>
+                <th>
+                    <a asp-action="Index" asp-controller="QADebtItems" asp-route-sortOrder="@ViewData["NameSort"]">
+                        Name @(sortOrder == "" ? "▲" : (sortOrder == "name_desc" ? "▼" : ""))
+                    </a>
+                </th>
+                 <th>Beg Balance</th>
+                <th>
+                    <a asp-action="Index" asp-controller="QADebtItems" asp-route-sortOrder="@ViewData["BalanceSort"]">
+                        Balance @(sortOrder == "balance" ? "▲" : (sortOrder == "balance_desc" ? "▼" : ""))
+                    </a>
+                </th>
+                <th>Payment</th>
+                <th>
+                    <a asp-action="Index" asp-controller="QADebtItems" asp-route-sortOrder="@ViewData["RateSort"]">
+                        Interest Rate @(sortOrder == "rate" ? "▲" : (sortOrder == "rate_desc" ? "▼" : ""))
+                    </a>
+                </th>
+                <th>Progress</th>
+                 <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var paid = item.BegBalance - item.Balance;
+                var percent = item.BegBalance > 0 ? (paid / item.BegBalance) * 100 : 0;
+
+                <tr>
+                    <td>@item.Name</td>
+                    @*                     <td>@item.DebtTypeDesc</td>
+ *@                   
+                            <td>@item.BegBalance.ToString("C")</td>
+                    <td>@item.Balance.ToString("C")</td>
+                    <td>@item.MinimumPayment.ToString("C")</td>
+                    <td>@item.InterestRate.ToString("0.##")%</td>
+                    <td style="min-width: 160px;">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success"
+                                 role="progressbar"
+                                 style="width: @percent.ToString("0.#")%;"
+                                 aria-valuenow="@percent.ToString("0")"
+                                 aria-valuemin="0" aria-valuemax="100">
+                                @percent.ToString("0.#")%
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-controller="QADebtItems" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                        <a asp-action="Details" asp-controller="QADebtItems" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">Details</a>
+                        <a asp-action="Delete" asp-controller="QADebtItems" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @{
+        var totalBeg = Model.Sum(d => d.BegBalance);
+        var totalCurrent = Model.Sum(d => d.Balance);
+        var totalPaid = totalBeg - totalCurrent;
+        var percentPaid = totalBeg > 0 ? (totalPaid / totalBeg) * 100 : 0;
+    }
+
+    <div class="mt-4 p-3 bg-light border rounded">
+        <h5 class="mb-2">Debt Summary (QA)</h5>
+        <p class="mb-1"><strong>Total Starting Balance:</strong> @totalBeg.ToString("C")</p>
+        <p class="mb-1"><strong>Total Remaining:</strong> @totalCurrent.ToString("C")</p>
+        <p class="mb-1"><strong>Total Paid:</strong> @totalPaid.ToString("C")</p>
+
+        <div class="progress mt-2" style="height: 24px;">
+            <div class="progress-bar bg-info"
+                 role="progressbar"
+                 style="width: @percentPaid.ToString("0.#")%;"
+                 aria-valuenow="@percentPaid.ToString("0")"
+                 aria-valuemin="0" aria-valuemax="100">
+                @percentPaid.ToString("0.#")% paid
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-action="Create" class="btn btn-primary me-2">
+            Add Debt
+        </a>
+        <a asp-controller="QaSnowball" asp-action="Quick" class="btn btn-outline-secondary">
+            Quick Analysis
+        </a>
+        <a asp-controller="QaSnowball"
+           asp-action="Index"
+           class="btn btn-success">
+            Run Quick Analysis
+        </a>
+    </div>
+</div>

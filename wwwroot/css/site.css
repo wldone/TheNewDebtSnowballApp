@@ -1,0 +1,205 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+button.disabled-pref {
+    pointer-events: none; /* no click */
+    opacity: 0.5; /* visually faded */
+    color: #6c757d; /* Bootstrap secondary text */
+    border-color: #6c757d;
+    background-color: transparent;
+}
+
+    button.disabled-pref:hover {
+        background-color: transparent;
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+.sort-link {
+    color: white !important;
+    text-decoration: none;
+}
+
+    .sort-link:hover {
+        color: #e0e0e0 !important; /* slightly lighter on hover */
+        text-decoration: underline;
+    }
+/*   =============================================================================
+*/
+/*.nav-link {
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);*/ /* or a custom rgba */
+    /*color: #fff !important;
+}*/
+/*.nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -5px;
+        height: 2px;
+        width: 0;
+        background-color: #FFC107;*/ /* or #fff or brand color */
+        /*transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+        width: 100%;
+    }*/
+.nav-link:hover {
+    color: #FFC107 !important; /* Bootstrap warning yellow or your brand accent */
+}
+
+/* Base color override */
+:root {
+    --bs-primary: #36476b;
+    --bs-primary-rgb: 54, 71, 107;
+}
+
+/* Headings (all levels) */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+/* Paragraph or content text (optional) */
+.theme-text {
+    color: #36476b;
+}
+
+/* Table header + border accents */
+.table thead th {
+    background-color: #36476b !important;
+    color: white;
+    border-color: #2e3f5a;
+}
+
+.table tbody td {
+    border-color: #dee2e6;
+}
+
+/* Optional: zebra striping with blue accent */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(54, 71, 107, 0.05);
+}
+.text-theme {
+    color: #36476b !important;
+}
+
+.bg-theme {
+    background-color: #36476b !important;
+    color: #fff !important;
+}
+
+.border-theme {
+    border-color: #36476b !important;
+}
+
+/* Quick Analysis wizard header */
+
+.quick-analysis .qa-steps {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.quick-analysis .qa-step {
+    background: #e0e0e0;
+    color: #777;
+    padding: 0.4rem 1.4rem;
+    border-radius: 999px;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+    min-width: 110px;
+}
+
+.quick-analysis .qa-step-number {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.quick-analysis .qa-step-label {
+    display: block;
+    font-size: 0.75rem;
+}
+
+.quick-analysis .qa-step.active {
+    background: #198754; /* Bootstrap green */
+    color: #fff;
+}
+
+/* Buttons --------------------------------------- */
+
+.quick-analysis .btn-next,
+.quick-analysis .btn-add-debt,
+.quick-analysis .btn-prev {
+    border-radius: 999px;
+    font-weight: 600;
+    background-color: #ff9900;
+    border-color: #ff9900;
+    color: #fff;
+}
+
+.quick-analysis .btn-prev {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+}
+
+    .quick-analysis .btn-next:hover,
+    .quick-analysis .btn-add-debt:hover,
+    .quick-analysis .btn-prev:hover {
+        background-color: #e68300;
+        border-color: #e68300;
+        color: #fff;
+    }
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.35s ease-in;
+}
+/* Row highlight + fade on delete */
+.qa-row-deleting {
+    background-color: #f8d7da; /* light red (Bootstrap danger background) */
+    transition: background-color 0.2s ease-out, opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+    .qa-row-deleting.qa-row-faded {
+        opacity: 0;
+        transform: translateY(-4px);
+    }

@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Http
+@model DebtSnowballApp.Areas.Admin.ViewModels.AdminListToolbarModel
+@{
+	var sort = (string)(ViewBag.Sort ?? "name");
+	var dir = (string)(ViewBag.Dir ?? "asc");
+	var q = (string)(ViewBag.Query ?? "");
+	var allRoles = ViewBag.AllRoles as IEnumerable<string> ?? Enumerable.Empty<string>();
+	string? currentRole = ViewBag.Role as string;
+	string? currentQuery = ViewBag.Query as string;
+}
+<div class="d-flex justify-content-between align-items-end mb-3">
+	<h2 class="mb-0">@Model.Title</h2>
+
+	<div class="d-flex align-items-center gap-2">
+		@if (allRoles != null && allRoles.Any())
+		{
+			<form method="get" class="d-flex gap-2">
+				<div class="col-auto">
+					@Html.DropDownList(
+										"role",                                 // name="role"
+										new SelectList(allRoles, currentRole),  // options + selected
+										"All roles",                            // option label
+										new { @class = "form-select-sm" }          // class
+										)
+				</div>
+				<div class="col-auto">
+					<button class="btn btn-sm  btn-primary">Filter</button>
+				</div>
+			</form>
+		}
+		<form method="get" class="d-flex gap-2">
+			<input name="@Model.QueryParamName"
+				   value="@Model.CurrentQuery"
+				   class="form-control form-control-sm"
+				   placeholder="@Model.SearchPlaceholder" />
+			<button class="btn btn-sm btn-outline-secondary" type="submit">Search</button>
+		</form>
+
+		@if (!string.IsNullOrWhiteSpace(Model.CreateUrl))
+		{
+			<a href="@Model.CreateUrl" class="btn btn-sm btn-success">+ @Model.CreateText</a>
+		}
+	</div>
+</div>

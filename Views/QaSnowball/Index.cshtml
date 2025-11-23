@@ -1,0 +1,49 @@
+﻿@model QaSnowballViewModel
+
+<h2>QA Debt Payoff Plan (@Model.Strategy)</h2>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-4">
+            <select class="form-select" name="strategy">
+                <option value="Snowball" selected="@("Snowball" == Model.Strategy)">Snowball</option>
+                <option value="Avalanche" selected="@("Avalanche" == Model.Strategy)">Avalanche</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="number" name="extra" value="@Model.ExtraPayment" step="10" class="form-control" placeholder="Extra Payment" />
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Run Strategy</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.PayoffPlan.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Debt Name</th>
+                <th>Payment</th>
+                <th>Remaining Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var month in Model.PayoffPlan)
+            {
+                @foreach (var line in month.Lines)
+                {
+                    <tr>
+                        <td>@month.MonthIndex</td>
+                        <td>@line.DebtName</td>
+                        <td>@line.Payment.ToString("C")</td>
+                        <td>@line.RemainingBalance.ToString("C")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+

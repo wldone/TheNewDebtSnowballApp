@@ -1,0 +1,55 @@
+﻿@model DebtSnowballApp.Models.QaDebtItem
+@{
+    ViewData["Title"] = "Debt Item Details";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Debt Item Details</h5>
+            <a asp-action="Index" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Name)</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(m => m.Name)</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(m => m.BegBalance)</dt>
+                <dd class="col-sm-8">@Model.BegBalance.ToString("C")</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(m => m.Balance)</dt>
+                <dd class="col-sm-8">@Model.Balance.ToString("C")</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(m => m.InterestRate)</dt>
+                <dd class="col-sm-8">@Model.InterestRate.ToString("N2")%</dd>
+
+                <dt class="col-sm-4">@Html.DisplayNameFor(m => m.MinimumPayment)</dt>
+                <dd class="col-sm-8">@Model.MinimumPayment.ToString("C")</dd>
+
+@*                 @if (Model.User != null)
+                {
+                    <dt class="col-sm-4">User</dt>
+                    <dd class="col-sm-8">@Model.User.Email</dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.TempUserId))
+                {
+                    <dt class="col-sm-4">Temp User ID</dt>
+                    <dd class="col-sm-8">@Model.TempUserId</dd>
+                }
+ *@            </dl>
+        </div>
+
+        <div class="card-footer text-end">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-list"></i> Back to List
+            </a>
+        </div>
+    </div>
+</div>

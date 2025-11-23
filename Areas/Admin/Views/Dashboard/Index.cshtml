@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+<div class="container py-4">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm">
+                <h5 class="mb-1">Users</h5>
+                <p class="mb-2">Manage users, roles, and passwords.</p>
+                <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-primary btn-sm">Open</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3 shadow-sm">
+                <h5 class="mb-1">Partners</h5>
+                <p class="mb-2">Manage partner lookups and mappings.</p>
+                <a asp-area="Admin" asp-controller="Partners" asp-action="Index" class="btn btn-primary btn-sm">Open</a>
+            </div>
+        </div>
+    </div>
+</div>

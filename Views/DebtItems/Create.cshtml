@@ -1,0 +1,67 @@
+@using DebtSnowballApp.Models
+@model DebtSnowballApp.ViewModels.DebtItemViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Debt Item</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Debt Type Dropdown -->
+            <div class="form-group mb-3">
+                <label asp-for="DebtItem.DebtTypeId" class="form-label">Debt Type</label>
+                <select asp-for="DebtItem.DebtTypeId" class="form-select" asp-items="Model.DebtTypeList">
+                    <option value="">-- Select --</option>
+                </select>
+                <span asp-validation-for="DebtItem.DebtTypeId" class="text-danger"></span>
+            </div>
+
+            <!-- Name -->
+            <div class="form-group mb-3">
+                <label asp-for="DebtItem.Name" class="form-label"></label>
+                <input asp-for="DebtItem.Name" class="form-control" />
+                <span asp-validation-for="DebtItem.Name" class="text-danger"></span>
+            </div>
+
+            <!-- Balance -->
+            <div class="form-group mb-3">
+                <label asp-for="DebtItem.Balance" class="form-label"></label>
+                <input asp-for="DebtItem.Balance" class="form-control" />
+                <span asp-validation-for="DebtItem.Balance" class="text-danger"></span>
+            </div>
+
+            <!-- Minimum Payment -->
+            <div class="form-group mb-3">
+                <label asp-for="DebtItem.MinimumPayment" class="form-label"></label>
+                <input asp-for="DebtItem.MinimumPayment" class="form-control" />
+                <span asp-validation-for="DebtItem.MinimumPayment" class="text-danger"></span>
+            </div>
+
+            <!-- Interest Rate -->
+            <div class="form-group mb-3">
+                <label asp-for="DebtItem.InterestRate" class="form-label"></label>
+                <input asp-for="DebtItem.InterestRate" class="form-control" />
+                <span asp-validation-for="DebtItem.InterestRate" class="text-danger"></span>
+            </div>
+
+            <!-- Submit -->
+            <div class="form-group mt-4">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

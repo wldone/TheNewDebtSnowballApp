@@ -1,0 +1,135 @@
+﻿@model IEnumerable<DebtSnowballApp.Models.DebtItem>
+
+@{
+	ViewData["Title"] = "My Debts";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<div class="table-responsive">
+	@{
+		var sortOrder = (string)(ViewData["CurrentSort"] ?? "");
+	}
+	<table class="table table-theme">
+
+		<thead class="table-light">
+			<tr>
+
+				<th>
+					<a asp-action="Index" asp-route-sortOrder="@ViewData["NameSort"]">
+						Name
+						@(sortOrder == "name" ? "▲" : (sortOrder == "name_desc" ? "▼" : ""))
+					</a>
+				</th>
+				<th>
+					<a asp-action="Index" asp-route-sortOrder="@ViewData["TypeSort"]">
+						Debt Type
+						@(sortOrder == "type" ? "▲" : (sortOrder == "type_desc" ? "▼" : ""))
+					</a>
+				</th>
+				<th>
+					<a asp-action="Index" asp-route-sortOrder="@ViewData["BalanceSort"]">
+						Balance
+						@(sortOrder == "balance" ? "▲" : (sortOrder == "balance_desc" ? "▼" : ""))
+					</a>
+				</th>
+				<th>
+					Min. Payment
+				</th>
+				<th>
+					<a asp-action="Index" asp-route-sortOrder="@ViewData["RateSort"]">
+						Interest Rate
+						@(sortOrder == "rate" ? "▲" : (sortOrder == "rate_desc" ? "▼" : ""))
+					</a>
+				</th>
+				<th>Beg Balance</th>
+				@*                 <th>Created</th>
+ *@                
+				<th>Updated</th>
+				<th>Progress</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr>
+					<td>@item.Name</td>
+					<td>@item.DebtTypeDesc</td>
+
+					<td>@item.Balance.ToString("C")</td>
+					<td>@item.MinimumPayment.ToString("C")</td>
+					<td>@item.InterestRate.ToString("0.##")%</td>
+					<td>@item.BegBalance.ToString("C")</td>
+					@*                     <td>@item.CreationDate.ToShortDateString()</td>
+ *@                    <td>@item.LastUpdate.ToShortDateString()</td>
+					<td style="min-width: 160px;">
+						@{
+							var paid = item.BegBalance - item.Balance;
+							var percent = item.BegBalance > 0 ? (paid / item.BegBalance) * 100 : 0;
+						}
+						<div class="progress" style="height: 20px;">
+							<div class="progress-bar bg-success"
+								 role="progressbar"
+								 style="width: @percent.ToString("0.#")%;"
+								 aria-valuenow="@percent.ToString("0")"
+								 aria-valuemin="0" aria-valuemax="100">
+								@percent.ToString("0.#")%
+							</div>
+						</div>
+					</td>
+
+					<td class="text-end">
+						<a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+						<a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">Details</a>
+						<a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+		@*         <tfoot>
+            <tr class="table-light fw-bold">
+                <td>Total</td>
+                <td>@Model.Sum(d => d.Balance).ToString("C")</td>
+                <td></td>
+				<td>@Model.Sum(d => d.MinimumPayment).ToString("C")</td>
+				<td>@Model.Sum(d => d.BegBalance).ToString("C")</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tfoot>
+ *@
+	</table>
+	@{
+		var totalBeg = Model.Sum(d => d.BegBalance);
+		var totalCurrent = Model.Sum(d => d.Balance);
+		var totalPaid = totalBeg - totalCurrent;
+	}
+
+	<div class="mt-4 p-3 bg-light border rounded">
+		<h5 class="mb-2">Debt Summary</h5>
+		<p class="mb-1"><strong>Total Starting Balance:</strong> @totalBeg.ToString("C")</p>
+		<p class="mb-1"><strong>Total Remaining:</strong> @totalCurrent.ToString("C")</p>
+		<p class="mb-1"><strong>Total Paid:</strong> @totalPaid.ToString("C")</p>
+
+		@{
+			var percentPaid = totalBeg > 0 ? (totalPaid / totalBeg) * 100 : 0;
+		}
+
+		<div class="progress mt-2" style="height: 24px;">
+			<div class="progress-bar bg-info"
+				 role="progressbar"
+				 style="width: @percentPaid.ToString("0.#")%;"
+				 aria-valuenow="@percentPaid.ToString("0")"
+				 aria-valuemin="0" aria-valuemax="100">
+				@percentPaid.ToString("0.#")% paid
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<div class="mt-3">
+	<a asp-action="Create" class="btn btn-success">Add New Debt</a>
+</div>

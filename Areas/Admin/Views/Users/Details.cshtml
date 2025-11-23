@@ -1,0 +1,166 @@
+﻿@using DebtSnowballApp.Areas.Admin.ViewModels   <!-- optional if you prefer fully qualifying -->
+@model AdminUserDetailsVm
+@{
+	ViewData["Title"] = "User Details";
+}
+
+<div class="container py-3">
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h2 class="mb-0">@Model.Email</h2>
+		<div>
+			<button id="editToggle" type="button" class="btn btn-primary">
+				<span class="me-1">Edit</span><i class="bi bi-pencil"></i>
+			</button>
+			<a class="btn btn-secondary" asp-action="Index">Back</a>
+		</div>
+	</div>
+
+	@if (Model.IsLockedOut)
+	{
+		<div class="alert alert-danger d-flex justify-content-between align-items-center">
+			<div>
+				<strong>Locked out</strong>
+				until @Model.LockoutEnd?.ToLocalTime().ToString("g")
+				(failed: @Model.AccessFailedCount)
+			</div>
+			<form asp-action="Unlock" method="post" class="m-0">
+				@Html.AntiForgeryToken()
+				<input type="hidden" name="id" value="@Model.Id" />
+				<button class="btn btn-outline-light btn-sm" type="submit">Unlock now</button>
+			</form>
+		</div>
+	}
+
+	<form asp-area="Admin" asp-controller="Users" asp-action="Update" method="post" id="editForm">
+		@Html.AntiForgeryToken()
+		<div asp-validation-summary="All" class="text-danger"></div>
+
+		<input type="hidden" asp-for="Id" />
+
+		<div class="row g-3">
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">Profilxxxe</div>
+					<div class="card-body">
+						<div class="mb-3">
+							<label class="form-label">Email</label>
+							<input class="form-control" value="@Model.Email" disabled />
+						</div>
+						<div class="mb-3">
+							<label asp-for="FirstName" class="form-label"></label>
+							<input asp-for="FirstName" class="form-control edit-field" disabled />
+						</div>
+						<div class="mb-3">
+							<label asp-for="LastName" class="form-label"></label>
+							<input asp-for="LastName" class="form-control edit-field" disabled />
+						</div>
+						<div class="mb-3">
+							<label class="form-label">Username</label>
+							<input class="form-control" value="@Model.UserName" disabled />
+						</div>
+						<div class="mb-3">
+							<label asp-for="PartnerId" class="form-label">Partner</label>
+							<select asp-for="PartnerId" asp-items="Model.Partners" class="form-select edit-field" disabled>
+								<option value="">(none)</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-header">Security</div>
+					<div class="card-body">
+						<div class="form-check mb-2">
+							<input asp-for="EmailConfirmed" class="form-check-input edit-field" disabled />
+							<label asp-for="EmailConfirmed" class="form-check-label"></label>
+						</div>
+						<div class="form-check mb-2">
+							<input asp-for="TwoFactorEnabled" class="form-check-input edit-field" disabled />
+							<label asp-for="TwoFactorEnabled" class="form-check-label"></label>
+						</div>
+						<div class="form-check mb-2">
+							<input asp-for="LockoutEnabled" class="form-check-input edit-field" disabled />
+							<label asp-for="LockoutEnabled" class="form-check-label"></label>
+						</div>
+
+						<div class="small text-muted">
+							<div>Access failed: @Model.AccessFailedCount</div>
+							<div>Lockout end: @(Model.LockoutEnd?.ToLocalTime().ToString("g") ?? "—")</div>
+							<div>Created: @(Model.CreatedUtc?.ToLocalTime().ToString("g") ?? "—")</div>
+							<div>Last login: @(Model.LastLoginUtc?.ToLocalTime().ToString("g") ?? "—")</div>
+						</div>
+					</div>
+				</div>
+	</form>
+	<div class="card mt-3">
+		<div class="card-header d-flex justify-content-between align-items-center">
+			<span>Roles</span>
+			<form asp-action="AddRole" method="post" class="d-flex gap-2 m-0">
+				@Html.AntiForgeryToken()
+				<input type="hidden" name="id" value="@Model.Id" />
+				<select name="role" asp-items="Model.AllRoles" class="form-select form-select-sm"></select>
+				<button class="btn btn-sm btn-outline-primary" type="submit">Add</button>
+			</form>
+		</div>
+		<div class="card-body">
+			@if (Model.Roles.Any())
+			{
+				<ul class="list-inline m-0">
+					@foreach (var r in Model.Roles)
+					{
+						<li class="list-inline-item mb-2">
+							<form asp-action="RemoveRole" method="post" class="d-inline">
+								@Html.AntiForgeryToken()
+								<input type="hidden" name="id" value="@Model.Id" />
+								<input type="hidden" name="role" value="@r" />
+								<span class="badge bg-secondary">
+									@r
+									<button type="submit" class="btn btn-sm btn-link text-white text-decoration-none ms-1 p-0">×</button>
+								</span>
+							</form>
+						</li>
+					}
+				</ul>
+			}
+			else
+			{
+				<div class="text-muted">No roles.</div>
+			}
+		</div>
+	</div>
+</div>
+<div id="editBar" class="d-none mt-3 d-flex gap-2">
+	<button type="submit" class="btn btn-success">Save changes</button>
+	<button type="button" id="cancelEdit" class="btn btn-outline-secondary">Cancel</button>
+</div>
+
+@section Scripts {
+	<script>
+		(() => {
+		  const editBtn = document.getElementById('editToggle');
+		  const editBar = document.getElementById('editBar');
+		  const cancelBtn = document.getElementById('cancelEdit');
+		  const fields = document.querySelectorAll('.edit-field');
+		  const form = document.getElementById('editForm');
+		  form.addEventListener('submit', () => {
+
+		  // ensure all editable fields are enabled so they POST
+		  document.querySelectorAll('#editForm .edit-field').forEach(el => el.disabled = false);
+		});
+
+		  function setEditing(on) {
+			fields.forEach(f => f.disabled = !on);
+			editBar.classList.toggle('d-none', !on);
+			editBtn.classList.toggle('btn-primary', !on);
+			editBtn.classList.toggle('btn-warning', on);
+			editBtn.innerHTML = on ? '<span class="me-1">Editing</span><i class="bi bi-pencil-square"></i>'
+								   : '<span class="me-1">Edit</span><i class="bi bi-pencil"></i>';
+		  }
+
+		  editBtn.addEventListener('click', () => setEditing(true));
+		  cancelBtn.addEventListener('click', () => { setEditing(false); location.reload(); });
+		})();
+	</script>
+}

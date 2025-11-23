@@ -1,0 +1,159 @@
+﻿@model DebtSnowballApp.Areas.Admin.ViewModels.UserEditVm
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">@ViewData["Title"]</h2>
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Back to Users</a>
+</div>
+
+<form asp-action="Edit" method="post" class="row gy-3">
+    @* Hidden key *@
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <!-- Account (identity) basics -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header py-2"><strong>Account</strong></div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="UserName" class="form-label"></label>
+                    <input asp-for="UserName" class="form-control" />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="PartnerId" class="form-label"></label>
+                    <select asp-for="PartnerId" class="form-select"
+                            asp-items="Model.Partners"></select>
+                    <span class="form-text">Choose the partner this user belongs to (optional).</span>
+                    <span asp-validation-for="PartnerId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Role" class="form-label"></label>
+                    <select asp-for="Role" class="form-select"
+                            asp-items="Model.Roles"></select>
+                    <span class="form-text">Leave as “(none)” for a standard user.</span>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile (name & address) -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header py-2"><strong>Profile</strong></div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FirstName" class="form-label"></label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="LastName" class="form-label"></label>
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Address1" class="form-label"></label>
+                    <input asp-for="Address1" class="form-control" />
+                    <span asp-validation-for="Address1" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Address2" class="form-label"></label>
+                    <input asp-for="Address2" class="form-control" />
+                    <span asp-validation-for="Address2" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-5">
+                    <label asp-for="City" class="form-label"></label>
+                    <input asp-for="City" class="form-control" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-3">
+                    <label asp-for="State" class="form-label"></label>
+                    <input asp-for="State" class="form-control" />
+                    <span asp-validation-for="State" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="PostalCode" class="form-label"></label>
+                    <input asp-for="PostalCode" class="form-control" />
+                    <span asp-validation-for="PostalCode" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Country" class="form-label"></label>
+                    <input asp-for="Country" class="form-control" />
+                    <span asp-validation-for="Country" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header py-2"><strong>Preferences</strong></div>
+            <div class="card-body row g-3">
+                <div class="col-md-6">
+                    <label asp-for="PreferredStrategy" class="form-label"></label>
+                    <select asp-for="PreferredStrategy" class="form-select"
+                            asp-items="Html.GetEnumSelectList<DebtSnowballApp.Models.PayoffStrategy>()">
+                    </select>
+                    <span asp-validation-for="PreferredStrategy" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="PreferredMonthlyBudget" class="form-label"></label>
+                    <input asp-for="PreferredMonthlyBudget" class="form-control" />
+                    <span asp-validation-for="PreferredMonthlyBudget" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account status (lock/unlock) -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header py-2"><strong>Account status</strong></div>
+            <div class="card-body d-flex flex-column gap-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" asp-for="Locked" id="lockedToggle" />
+                    <label class="form-check-label" for="lockedToggle">
+                        @Html.DisplayNameFor(m => m.Locked)
+                    </label>
+                </div>
+                <small class="text-muted">
+                    When checked, the user is locked out (sign-in blocked). Uncheck to immediately unlock.
+                </small>
+                <span asp-validation-for="Locked" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="col-12 d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
