@@ -13,6 +13,7 @@ namespace DebtSnowballApp.Data
         public DbSet<Partner> Partners { get; set; } = default!;
         public DbSet<QaDebtItem> QaDebtItems { get; set; } = default!;
         public DbSet<DebtType> DebtTypes { get; set; } = default!;
+        public DbSet<QuickAnalysisPersonal> QuickAnalysisPersonals { get; set; } = default!;
 
         // 🧭 Relationship and model configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
