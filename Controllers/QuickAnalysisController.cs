@@ -1,5 +1,8 @@
 ﻿using DebtSnowballApp.Data;
 using DebtSnowballApp.Models;
+using DebtSnowballApp.Services;
+//using DebtSnowballApp.ViewModels.QuickAnalysisViewModel;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,12 +13,17 @@ public class QuickAnalysisController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IQuickAnalysisCalculator _quickCalc;
 
-    public QuickAnalysisController(ApplicationDbContext context,
-                                   UserManager<ApplicationUser> userManager)
+
+    public QuickAnalysisController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IQuickAnalysisCalculator quickCalc)
     {
         _context = context;
         _userManager = userManager;
+        _quickCalc = quickCalc;
     }
 
     // helper
@@ -184,7 +192,7 @@ public class QuickAnalysisController : Controller
                     return View(vm);
                 }
 
-                return RedirectToAction(nameof(Step3Results));
+                return RedirectToAction(nameof(Step3Result));
 
             case "Previous":
                 return RedirectToAction(nameof(Step1Personal));
@@ -273,13 +281,28 @@ public class QuickAnalysisController : Controller
         return RedirectToAction(nameof(Step2Debts));
     }
 
-    // stub for now – you’ll flesh this out later
     [HttpGet]
-    public IActionResult Step3Results()
+    public async Task<IActionResult> Step3Result()
     {
-        return View();
+        var ownerId = GetCurrentId();                    // same helper you use in Step1/2
+        var vm = await _quickCalc.CalculateAsync(ownerId);
+        return View("Step3Result", vm);                 // make sure this matches your .cshtml name
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Step3Next()
+    {
+        // save anything needed, then move to step 4
+        return RedirectToAction("Step4");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Step3Previous()
+    {
+        return RedirectToAction("Step2Debts");
+    }
     private static readonly string[] QuickDebtTypes = new[]
     {
         "Mortgage",
@@ -305,31 +328,88 @@ public class QuickAnalysisController : Controller
         new QaDebtItem
         {
             Name = "Mortgage",
-            Balance = 245000,
-            InterestRate = 4.25m,
-            MinimumPayment = 1450
+            Balance = 200000,
+            InterestRate = 7m,
+            MinimumPayment = 1330
         },
         new QaDebtItem
         {
             Name = "Auto Loan",
-            Balance = 18500,
-            InterestRate = 6.9m,
-            MinimumPayment = 385
+            Balance = 25000,
+            InterestRate = 5m,
+            MinimumPayment = 450
+        },
+        new QaDebtItem
+        {
+            Name = "Auto Loan",
+            Balance = 35000,
+            InterestRate = 5m,
+            MinimumPayment = 575
         },
         new QaDebtItem
         {
             Name = "Credit Card",
-            Balance = 8200,
-            InterestRate = 18.99m,
-            MinimumPayment = 200
+            Balance = 10000,
+            InterestRate = 18m,
+            MinimumPayment = 300
         },
         new QaDebtItem
         {
-            Name = "Student Loan",
-            Balance = 26500,
-            InterestRate = 5.5m,
-            MinimumPayment = 275
+            Name = "Credit Card",
+            Balance = 5000,
+            InterestRate = 14m,
+            MinimumPayment = 150
+        },
+        new QaDebtItem
+        {
+            Name = "Credit Card",
+            Balance = 2500,
+            InterestRate = 18m,
+            MinimumPayment = 75
+        },
+        new QaDebtItem
+        {
+            Name = "Other",
+            Balance = 2500,
+            InterestRate = 21m,
+            MinimumPayment = 250
+        },
+        new QaDebtItem
+        {
+            Name = "Other",
+            Balance = 10000,
+            InterestRate = 6m,
+            MinimumPayment = 450
         }
+
+        //new QaDebtItem
+        //{
+        //    Name = "Mortgage",
+        //    Balance = 245000,
+        //    InterestRate = 4.25m,
+        //    MinimumPayment = 1450
+        //},
+        //new QaDebtItem
+        //{
+        //    Name = "Auto Loan",
+        //    Balance = 18500,
+        //    InterestRate = 6.9m,
+        //    MinimumPayment = 385
+        //},
+        //new QaDebtItem
+        //{
+        //    Name = "Credit Card",
+        //    Balance = 8200,
+        //    InterestRate = 18.99m,
+        //    MinimumPayment = 200
+        //},
+        //new QaDebtItem
+        //{
+        //    Name = "Student Loan",
+        //    Balance = 26500,
+        //    InterestRate = 5.5m,
+        //    MinimumPayment = 275
+        //}
     };
 
         foreach (var d in demoDebts)
@@ -341,6 +421,70 @@ public class QuickAnalysisController : Controller
         }
 
         return demoDebts;
+    }
+    private async Task<QuickAnalysisResultViewModel> BuildSummaryAsync()
+    {
+        var id = GetCurrentId();
+
+        // Load personal info
+        var person = await _context.QuickAnalysisPersonals
+            .FirstOrDefaultAsync(p => p.UserId == id || p.TempUserId == id);
+
+        var debts = await _context.QaDebtItems
+            .Where(d => d.UserId == id || d.TempUserId == id)
+            .ToListAsync();
+
+        if (person == null || debts.Count == 0)
+            throw new Exception("Missing personal data or debts.");
+
+        // ---------------------------
+        // PERFORM YOUR CALCULATIONS
+        // ---------------------------
+
+        // Total debt
+        var totalDebt = debts.Sum(d => d.BegBalance);
+
+        // Monthly debt
+        var monthly = debts.Sum(d => d.MinimumPayment);
+
+        // Debt freedom
+        var yearsCurrent = 30.1;     // placeholder
+        var yearsPlan = 9.3;         // placeholder
+
+        // Principal & interest
+        decimal pAndICurrent = 595972m;
+        decimal pAndIPlan = 393944m;
+
+        // Savings
+        decimal savings = pAndICurrent - pAndIPlan;
+
+        // Cost per day
+        decimal costPerDay = Math.Round(savings / 365m, 2);
+
+        // Wealth builder
+        decimal wealth = 1570454m;
+
+        return new QuickAnalysisResultViewModel
+        {
+            ClientName = $"{person.FirstName} {person.LastName.FirstOrDefault()}.",
+
+            CurrentTotalDebt = totalDebt,
+            CurrentMonthlyDebt = monthly,
+            CurrentDebtFreedomYears = yearsCurrent,
+            CurrentPrincipalAndInterest = pAndICurrent,
+
+            PlanTotalDebt = totalDebt,
+            PlanMonthlyDebt = monthly,
+            PlanDebtFreedomYears = yearsPlan,
+            PlanPrincipalAndInterest = pAndIPlan,
+
+            CostPerDay = costPerDay,
+
+            WealthBuilderTotalWealth = wealth,
+            WealthBuilderMonthlyContribution = monthly,
+            WealthBuilderPeriodYears = 20.8,
+            WealthBuilderRoiPercent = 5
+        };
     }
 
 }

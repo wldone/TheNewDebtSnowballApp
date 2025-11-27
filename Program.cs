@@ -44,6 +44,7 @@ builder.Services.AddRazorPages(); // 👈 needed for Identity UI
 
 builder.Services.AddScoped<SnowballCalculator>();
 builder.Services.AddScoped(typeof(IDebtPayoffCalculator<>), typeof(DebtPayoffCalculator<>));
+builder.Services.AddScoped<IQuickAnalysisCalculator, QuickAnalysisCalculator>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

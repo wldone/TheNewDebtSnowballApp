@@ -203,3 +203,12 @@ h1, h2, h3, h4, h5, h6 {
         opacity: 0;
         transform: translateY(-4px);
     }
+.cost-zoom-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transform-origin: center center;
+}
+
+    .cost-zoom-card:hover {
+        transform: scale(1.15) rotate(-1deg);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.35) !important;
+    }
