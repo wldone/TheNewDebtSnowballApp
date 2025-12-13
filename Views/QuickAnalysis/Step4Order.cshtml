@@ -1,0 +1,161 @@
+﻿@model DebtSnowballApp.Models.QuickAnalysisOrderViewModel
+@{
+    ViewData["Title"] = "Quick Analysis – Step 4";
+}
+
+<div class="container my-4 quick-analysis">
+    <div class="row justify-content-center quick-analysis-order">
+        <div class="col-lg-8">
+
+            <h2 class="text-center mb-4 fw-bold">Quick Analysis</h2>
+
+            <!-- Step header bar -->
+            <div class="qa-steps d-flex justify-content-center mb-4">
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 1</span>
+                    <span class="qa-step-label">Personal Info</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 2</span>
+                    <span class="qa-step-label">Debts</span>
+                </div>
+                <div class="qa-step">
+                    <span class="qa-step-number">Step 3</span>
+                    <span class="qa-step-label">Analysis</span>
+                </div>
+                <div class="qa-step active">
+                    <span class="qa-step-number">Step 4</span>
+                    <span class="qa-step-label">Order</span>
+                </div>
+            </div>
+            <div class="col-lg-8 fs-5 fw-semibold">
+                <p class="mb-4 text-center">
+                    Now that you’ve seen what’s possible, take&nbsp;advantage&nbsp;of&nbsp;our<br />
+                    <span class="fw-bold text-uppercase" style="color:#ff7a00;">7 Day Free Trial</span>.
+                </p> <p class="mb-4 text-center">
+                    Discover how it feels to finally&nbsp;get&nbsp;control&nbsp;of&nbsp;your&nbsp;finances!
+                </p>
+
+            </div>
+
+            <div class="row g-4 align-items-start">
+
+                <!-- LEFT — ORDER FORM BLOCK -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-3 h-100">
+                        <div class="card-body p-4">
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <form asp-action="Step4Order" method="post" novalidate>
+                                @Html.AntiForgeryToken()
+
+                                <!-- Name on Card -->
+                                <div class="mb-3 row align-items-center">
+                                    <label asp-for="NameOnCard" class="col-sm-4 col-form-label fw-semibold"></label>
+                                    <div class="col-sm-8">
+                                        <input asp-for="NameOnCard" class="form-control qa-input" />
+                                        <span asp-validation-for="NameOnCard" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <!-- Email Address -->
+                                @*  <input  asp-for="Email" />
+                                
+                                <div class="mb-3 row align-items-center">
+                                    <label asp-for="Email" class="col-sm-4 col-form-label fw-semibold"></label>
+                                    <div class="col-sm-8">
+                                        <input asp-for="Email" class="form-control qa-input" />
+                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                    </div>
+                                </div>
+ *@
+                                <!-- Card Number -->
+                                <div class="mb-3 row align-items-center">
+                                    <label asp-for="CardNumber" class="col-sm-4 col-form-label fw-semibold"></label>
+                                    <div class="col-sm-8">
+                                        <input asp-for="CardNumber" class="form-control qa-input" />
+                                        <span asp-validation-for="CardNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Expiration -->
+                                <div class="mb-3 row align-items-center">
+                                    <label class="col-sm-4 col-form-label fw-semibold">Card Expiration</label>
+                                    <div class="col-sm-8 d-flex gap-2">
+                                        <select asp-for="ExpirationMonth" class="form-select qa-input-select w-50">
+                                            @for (int m = 1; m <= 12; m++)
+                                            {
+                                                <option value="@m">@m.ToString("00")</option>
+                                            }
+                                        </select>
+                                        <select asp-for="ExpirationYear" class="form-select qa-input-select w-50">
+                                            @{
+                                                var startYear = DateTime.UtcNow.Year;
+                                                var endYear = startYear + 15;
+                                                for (int y = startYear; y <= endYear; y++)
+                                                {
+                                                    <option value="@y">@y</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Security Code -->
+                                <div class="mb-3 row align-items-center">
+                                    <label asp-for="SecurityCode" class="col-sm-4 col-form-label fw-semibold"></label>
+                                    <div class="col-sm-4">
+                                        <input asp-for="SecurityCode" class="form-control qa-input" />
+                                        <span asp-validation-for="SecurityCode" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Submit -->
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="submit" class="btn btn-next px-4">Submit</button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT — PRICE/TRIAL BLOCK (aligned with left block) -->
+                <div class="col-lg-4">
+                    <div class=" shadow-sm border-0 h-100">
+                        <div class="card-body p-3 text-center fw-semibold">
+
+                            <div class="small mb-1">After 7 day trial period</div>
+
+                            <div class="fw-bold" style="font-size:2.2rem;">
+                                $29.95/<span class="fs-6 ">MO</span>
+                            </div>
+
+                            <div class="small fw-semibold mb-3">
+                                Cancel at any time with&nbsp;no&nbsp;obligation
+                            </div>
+
+                            <hr class="my-3" />
+
+                            <div class="fw-semibold mb-1">We Accept</div>
+
+                            <img src="~/images/cards.jpg"
+                                 alt="Accepted Cards"
+                                 class="img-fluid mb-2"
+                                 style="max-width:220px;" />
+
+                            <div class="small d-flex text-center">
+                                Your&nbsp;payment&nbsp;information is&nbsp;transmitted&nbsp;securely and&nbsp;is&nbsp;never&nbsp;stored&nbsp;on&nbsp;our&nbsp;system!
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>

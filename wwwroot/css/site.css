@@ -212,3 +212,35 @@ h1, h2, h3, h4, h5, h6 {
         transform: scale(1.15) rotate(-1deg);
         box-shadow: 0 0 30px rgba(0, 0, 0, 0.35) !important;
     }
+/* Wrap for Step 4 order layout */
+.quick-analysis-order {
+    position: relative;
+}
+
+/* Floating price/trial block for large screens */
+.qa-price-float {
+    position: absolute;
+    top: 50%;
+    right: 5%; /* tweak as needed to sit in orange band */
+    transform: translateY(-50%);
+    max-width: 260px;
+}
+
+/* Style of the floating price block */
+.qa-price-box {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1rem 2rem rgba(0,0,0,0.25);
+}
+
+/* On smaller screens, don't float—stack below instead */
+@media (max-width: 991.98px) {
+    .qa-price-float {
+        position: static;
+        transform: none;
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: center;
+    }
+}

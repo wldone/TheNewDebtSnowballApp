@@ -40,28 +40,6 @@
                     <span class="qa-step-label">Order</span>
                 </div>
             </div>
-            <!-- Step pills -->
-            @* <div class="d-flex justify-content-center mb-4 gap-2 flex-wrap">
-        <a asp-action="Step1Personal"
-           class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-            Step 1 &nbsp; Personal
-        </a>
-        <a asp-action="Step2Debts"
-           class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-            Step 2 &nbsp; Debts
-        </a>
-        <button type="button"
-                class="btn btn-sm rounded-pill px-3 text-white fw-semibold"
-                style="background-color:#00a651;"
-                disabled>
-            Step 3 &nbsp; Results
-        </button>
-        <button type="button"
-                class="btn btn-sm btn-outline-secondary rounded-pill px-3"
-                disabled>
-            Step 4 &nbsp; Plan
-        </button>
-    </div> *@
 
             <!-- Comparison + Cost Per Day -->
             <div class="row g-3 mb-4 align-items-stretch">
@@ -120,8 +98,8 @@
                                             </td>
                                         </tr>
                                         <tr class="fw-bold fs-4">
-                                            <th colspan="2" class="text-end" scope="row">Total Savings</th>
-                                            <td class="text-end text-primary">
+                                            <th colspan="2" class="text-end text-success" scope="row">Total Savings</th>
+                                            <td class="text-end text-success">
                                                 @Model.TotalSavings.ToString("C0")
                                             </td>
                                         </tr>

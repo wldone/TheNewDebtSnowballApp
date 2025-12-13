@@ -4,6 +4,7 @@
     {
         // Header
         public string ClientName { get; set; } = string.Empty;
+        public string? ClientEmail { get; set; }
 
         // LEFT COLUMN – Current Debt
         public decimal CurrentTotalDebt { get; set; }
