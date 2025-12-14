@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
 public class QuickAnalysisController : Controller
@@ -14,16 +15,21 @@ public class QuickAnalysisController : Controller
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IQuickAnalysisCalculator _quickCalc;
-
+    //private readonly EmailBuilder _emailBuilder;
+    private readonly IEmailService _emailService;
 
     public QuickAnalysisController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        IQuickAnalysisCalculator quickCalc)
+        IQuickAnalysisCalculator quickCalc,
+        //EmailBuilder emailBuilder,
+        IEmailService emailService)
     {
         _context = context;
         _userManager = userManager;
         _quickCalc = quickCalc;
+        //_emailBuilder = emailBuilder;
+        _emailService = emailService;
     }
 
     // helper
@@ -39,6 +45,20 @@ public class QuickAnalysisController : Controller
             HttpContext.Session.SetString("TempUserId", tempUserId);
         }
         return tempUserId;
+    }
+    private const string QaEmailSessionKey = "QA_Email";
+
+    private void SaveQaEmail(string? email)
+    {
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            HttpContext.Session.SetString(QaEmailSessionKey, email);
+        }
+    }
+
+    private string? GetQaEmail()
+    {
+        return HttpContext.Session.GetString(QaEmailSessionKey);
     }
 
     [HttpGet]
@@ -83,6 +103,9 @@ public class QuickAnalysisController : Controller
         }
 
         await _context.SaveChangesAsync();
+
+        SaveQaEmail(model.Email);
+
         return RedirectToAction(nameof(Step2Debts));   // next step in wizard
     }
 
@@ -141,7 +164,7 @@ public class QuickAnalysisController : Controller
 
 
             case "AddDebt":
-                // whole-dollar guard (optional, from earlier)
+                TempData.Remove("LastDeletedDebt");
                 if (vm.NewDebt.Balance % 1 != 0 || vm.NewDebt.MinimumPayment % 1 != 0)
                 {
                     ModelState.AddModelError(string.Empty,
@@ -178,7 +201,7 @@ public class QuickAnalysisController : Controller
                 return RedirectToAction(nameof(Step2Debts));
 
             case "Next":
-                // ensure at least one debt exists before moving on
+                TempData.Remove("LastDeletedDebt");
                 var hasDebts = await _context.QaDebtItems
                     .AnyAsync(d => d.UserId == id || d.TempUserId == id);
 
@@ -195,6 +218,7 @@ public class QuickAnalysisController : Controller
                 return RedirectToAction(nameof(Step3Result));
 
             case "Previous":
+                TempData.Remove("LastDeletedDebt");
                 return RedirectToAction(nameof(Step1Personal));
         }
 
@@ -286,15 +310,29 @@ public class QuickAnalysisController : Controller
     {
         var ownerId = GetCurrentId();                    // same helper you use in Step1/2
         var vm = await _quickCalc.CalculateAsync(ownerId);
+        HttpContext.Session.SetString("QA_FullName", vm.ClientName);
+        TempData.Remove("LastDeletedDebt");
         return View("Step3Result", vm);                 // make sure this matches your .cshtml name
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Step3Next()
+    public async Task<IActionResult> Step3Next()
     {
-        // save anything needed, then move to step 4
-        return RedirectToAction("Step4");
+         var ownerId = GetCurrentId();                    // same helper you use in Step1/2
+       var model = await _quickCalc.CalculateAsync(ownerId); if (model == null)
+            return RedirectToAction(nameof(Step2Debts));   // or some error page
+
+        var email = model.ClientEmail;   // ⬅️ from Step 1
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            string subject = "Your Quick Analysis Results – My Financial Outlook";
+            string bodyHtml = EmailBuilder.BuildStep3EmailBody(model);
+
+            //await _emailService.SendAsync(email, subject, bodyHtml);
+        }
+
+        return RedirectToAction(nameof(Step4Order));
     }
 
     [HttpPost]
@@ -303,6 +341,59 @@ public class QuickAnalysisController : Controller
     {
         return RedirectToAction("Step2Debts");
     }
+
+    [HttpGet]
+    public IActionResult Step4Order(string? email)
+    {
+        // 1. If email passed via query string, store in session
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            HttpContext.Session.SetString("QA_Email", email);
+        }
+
+        // 2. Pull from session (this ensures a single source of truth)
+        var sessionEmail = HttpContext.Session.GetString("QA_Email");
+        var fullName = HttpContext.Session.GetString("QA_FullName");
+
+        // 3. Create the viewmodel
+        var vm = new QuickAnalysisOrderViewModel
+        {
+            NameOnCard = fullName ?? string.Empty,
+            ExpirationMonth = DateTime.UtcNow.Month,
+            ExpirationYear = DateTime.UtcNow.Year,
+            Email = sessionEmail // optional, only if your view model has Email
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Step4Order(QuickAnalysisOrderViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        // TODO: hook into real subscription / stripe / etc.
+        // For now, just send them to a simple thank-you page.
+        return RedirectToAction("Step4ThankYou");
+    }
+
+    [HttpGet]
+    public IActionResult Step4ThankYou()
+    {
+        var email = HttpContext.Session.GetString("QA_Email");
+        var clientName = HttpContext.Session.GetString("QA_FullName");
+
+        var vm = new QuickAnalysisOrderViewModel
+        {
+            NameOnCard = clientName ?? string.Empty,
+            Email = email ?? string.Empty
+        };
+
+        return View(vm);
+    }
+
     private static readonly string[] QuickDebtTypes = new[]
     {
         "Mortgage",

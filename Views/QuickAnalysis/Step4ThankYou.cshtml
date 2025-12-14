@@ -1,0 +1,56 @@
+﻿@model DebtSnowballApp.Models.QuickAnalysisOrderViewModel
+@{
+    ViewData["Title"] = "Thank You!";
+}
+
+<div class="container py-5 quick-analysis" style="max-width: 760px;">
+
+    <div class="text-center mb-4 fw-semibold">
+        <h2 class="fw-bold mb-3">Thank You!</h2>
+        @if (!string.IsNullOrWhiteSpace(Model.NameOnCard))
+        {
+            <h2 class="fw-bold mb-3">@Model.NameOnCard.</h2>
+        }
+
+        <p class="mb-2 fs-5">
+            Your 7-day free trial is now active.
+        </p>
+        @if (!string.IsNullOrWhiteSpace(Model.Email))
+        {
+            <p class="text-muted">We’ll use @Model.Email for your account setup.</p>
+        }
+        <p class="mb-4">
+            We're excited to help you take control of your finances and begin your journey
+            toward debt-freedom and long-term wealth.
+        </p>
+
+    </div>
+
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 540px;">
+        <div class="card-body p-4 text-center">
+            <h5 class="fw-semibold mb-2">Next Steps</h5>
+            <p class="text-muted mb-4">
+                You're all set! Use your new financial tools to track progress, analyze debts,
+                and build your personalized payoff plan.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3">
+
+                <form method="get"
+                      asp-area="Identity"
+                      asp-page="/Account/Register">
+                    @* Pass email to the Identity Register page if we have it *@
+                    @if (!string.IsNullOrWhiteSpace(Model.Email))
+                    {
+                        <input type="hidden" name="email" value="@Model.Email" />
+                    }
+
+                    <button type="submit" class="btn btn-primary mt-3">
+                        Create My Full Account
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>

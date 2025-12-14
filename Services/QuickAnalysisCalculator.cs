@@ -27,7 +27,9 @@ namespace DebtSnowballApp.Services
             var person = await _context.QuickAnalysisPersonals
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.UserId == ownerId || p.TempUserId == ownerId);
-
+            if (person == null)
+                throw new InvalidOperationException("Missing Step 1 personal info.");
+            
             var debts = await _context.QaDebtItems
                 .AsNoTracking()
                 .Where(d => d.UserId == ownerId || d.TempUserId == ownerId)
@@ -68,7 +70,7 @@ namespace DebtSnowballApp.Services
             var vm = new QuickAnalysisResultViewModel
             {
                 ClientName = BuildClientName(person),
-
+                ClientEmail = person.Email,
                 // Current
                 CurrentTotalDebt = totalDebt,
                 CurrentMonthlyDebt = monthlyDebt,
@@ -90,7 +92,6 @@ namespace DebtSnowballApp.Services
                 WealthBuilderPeriodYears = yearsSaved,
                 WealthBuilderRoiPercent = (double)(DefaultAnnualRoi * 100m)
             };
-
             return vm;
         }
 
@@ -100,9 +101,9 @@ namespace DebtSnowballApp.Services
         {
             if (string.IsNullOrWhiteSpace(person.LastName))
                 return person.FirstName;
-
-            var initial = person.LastName[0];
-            return $"{person.FirstName} {char.ToUpperInvariant(initial)}.";
+            return $"{person.FirstName} {person.LastName}".Trim();
+            //var initial = person.LastName[0];
+            //return $"{person.FirstName} {char.ToUpperInvariant(initial)}.";
         }
 
         // ---------- CURRENT: independent payoffs, no snowball ----------

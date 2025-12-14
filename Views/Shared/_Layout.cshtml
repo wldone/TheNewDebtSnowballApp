@@ -61,16 +61,23 @@
 			{
 				<a class="flex-fill d-flex align-items-center justify-content-center text-white fw-bold text-decoration-none border-end border-white" asp-area="" asp-controller="DebtItems" asp-action="Index">Debts</a>
 				<a class="flex-fill d-flex align-items-center justify-content-center text-white fw-bold text-decoration-none border-end border-white" asp-area="" asp-controller="Snowball" asp-action="Index">Payoff</a>
+                <a class="flex-fill d-flex align-items-center justify-content-center text-white fw-bold text-decoration-none border-end border-white" asp-area="" asp-controller="QaDebtItems" asp-action="Index">Quick Analysis</a>
+            }
+			else
+			{
+				<a class="flex-fill d-flex align-items-center justify-content-center text-white fw-bold text-decoration-none border-end border-white" asp-area="" asp-controller="QuickAnalysis" asp-action="Step1Personal">Quick Analysis</a>
+
 			}
-			<a class="flex-fill d-flex align-items-center justify-content-center text-white fw-bold text-decoration-none border-end border-white" asp-area="" asp-controller="QaDebtItems" asp-action="Index">Quick Analysis</a>
 			<a class="flex-fill d-flex align-items-center justify-content-center text-white fw-bold text-decoration-none" asp-controller="Home" asp-area="" asp-action="Privacy">Privacy</a>
 		</div>
 
 	</div>
-	<div class="container" style="background: linear-gradient(to bottom, #fff, #f26722); ">
-		<main role="main" class="pb-3">
-			@RenderBody()
-		</main>
+	<div class="w-100" style="background: linear-gradient(to bottom, #fff, #f26722);">
+		<div class="container-fluid">
+			<main role="main" class="pb-3">
+				@RenderBody()
+			</main>
+		</div>
 	</div>
 
 	<footer class="footer text-muted" style="background-color: #36476b; height:75px">

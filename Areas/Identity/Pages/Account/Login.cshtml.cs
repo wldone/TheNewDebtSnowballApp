@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Authentication; // <-- needed for AuthenticationScheme
-using DebtSnowballApp.Models; // adjust if ApplicationUser is elsewhere
+using DebtSnowballApp.Models; // ApplicationUser
 
 namespace DebtSnowballApp.Areas.Identity.Pages.Account
 {
@@ -28,7 +28,7 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; } = new();
 
-        public IList<AuthenticationScheme> ExternalLogins { get; set; } = new List<AuthenticationScheme>(); // <-- add this
+        public IList<AuthenticationScheme> ExternalLogins { get; set; } = new List<AuthenticationScheme>();
 
         public string? ReturnUrl { get; set; }
 
@@ -36,7 +36,7 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
         {
             [Required]
             [Display(Name = "Email or username")]
-            public string LoginInput { get; set; } = string.Empty;  // no [EmailAddress]
+            public string LoginInput { get; set; } = string.Empty;
 
             [Required]
             [DataType(DataType.Password)]
@@ -46,7 +46,7 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string? returnUrl = null)
+        public async Task OnGetAsync(string? returnUrl = null, string? email = null)
         {
             ReturnUrl = returnUrl ?? Url.Content("~/");
 
@@ -55,11 +55,19 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
 
             // Populate for the view (buttons for Google/Microsoft, etc.)
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            // Optional: prefill login box if coming from somewhere with ?email=...
+            if (!string.IsNullOrEmpty(email))
+            {
+                Input ??= new InputModel();
+                Input.LoginInput = email;
+            }
         }
 
         public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
         {
             ReturnUrl = returnUrl ?? Url.Content("~/");
+
             if (!ModelState.IsValid)
             {
                 // repopulate on validation error
