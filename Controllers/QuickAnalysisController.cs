@@ -101,6 +101,8 @@ public class QuickAnalysisController : Controller
             existing.Email = model.Email;
             existing.Phone = model.Phone;
         }
+        HttpContext.Session.SetString("QA_FirstName", model.FirstName);
+        HttpContext.Session.SetString("QA_LastName", model.LastName);
 
         await _context.SaveChangesAsync();
 
