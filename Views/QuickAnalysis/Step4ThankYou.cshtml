@@ -1,6 +1,12 @@
-﻿@model DebtSnowballApp.Models.QuickAnalysisOrderViewModel
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@model DebtSnowballApp.Models.QuickAnalysisOrderViewModel
 @{
     ViewData["Title"] = "Thank You!";
+    var firstName = HttpContextAccessor.HttpContext?.Session.GetString("QA_FirstName");
+    var lastName = HttpContextAccessor.HttpContext?.Session.GetString("QA_LastName");
+
 }
 
 <div class="container py-5 quick-analysis" style="max-width: 760px;">
@@ -39,16 +45,29 @@
                 <form method="get"
                       asp-area="Identity"
                       asp-page="/Account/Register">
+
                     @* Pass email to the Identity Register page if we have it *@
                     @if (!string.IsNullOrWhiteSpace(Model.Email))
                     {
                         <input type="hidden" name="email" value="@Model.Email" />
                     }
 
+                    @* Pass first + last name from session *@
+                    @if (!string.IsNullOrWhiteSpace(firstName))
+                    {
+                        <input type="hidden" name="firstName" value="@firstName" />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(lastName))
+                    {
+                        <input type="hidden" name="lastName" value="@lastName" />
+                    }
+
                     <button type="submit" class="btn btn-primary mt-3">
                         Create My Full Account
                     </button>
                 </form>
+
             </div>
         </div>
     </div>

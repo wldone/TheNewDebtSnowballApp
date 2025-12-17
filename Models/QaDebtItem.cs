@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
-using DebtSnowballApp.Models.Interfaces; 
+using DebtSnowballApp.Models.Interfaces;
 
 namespace DebtSnowballApp.Models
 {
@@ -15,7 +15,7 @@ namespace DebtSnowballApp.Models
         public string Name { get; set; } = string.Empty;
 
         [Precision(18, 2)]
-        [Display(Name="Beginning Balance")]
+        [Display(Name = "Beginning Balance")]
         public decimal BegBalance { get; set; }
 
         [Required]
@@ -23,19 +23,19 @@ namespace DebtSnowballApp.Models
         [Range(0, 1_000_000)]
         public decimal Balance { get; set; }
 
-             [Required]
+        [Required]
         [Precision(5, 2)]
         [Display(Name = "Interest Rate (%)")]
         [Column(TypeName = "decimal(5,2)")]
         [Range(0, 100)]
         public decimal InterestRate { get; set; }
 
-     [Display(Name = "Minimum Payment")]
+        [Display(Name = "Minimum Payment")]
         [Column(TypeName = "decimal(18,2)")]
         [Range(0, 1_000_000)]
         public decimal MinimumPayment { get; set; }
 
-        
+
         [ValidateNever]
         public string? UserId { get; set; }
 
@@ -49,7 +49,7 @@ namespace DebtSnowballApp.Models
         //[Precision(18, 2)]
         //public decimal ExtraPayment { get; set; }
 
- //[Required]
+        //[Required]
         //[ValidateNever]
         //public int PartnerId { get; set; }
 
@@ -88,10 +88,10 @@ namespace DebtSnowballApp.Models
 
         //public int DebtTypeId { get; set; }
 
-    //    [ForeignKey("DebtTypeId")]
-    //    public DebtType? DebtType { get; set; }
+        //    [ForeignKey("DebtTypeId")]
+        //    public DebtType? DebtType { get; set; }
 
-    //    [NotMapped]
-    //    public string? DebtTypeDesc => DebtType?.Description;
+        //    [NotMapped]
+        //    public string? DebtTypeDesc => DebtType?.Description;
     }
 }
