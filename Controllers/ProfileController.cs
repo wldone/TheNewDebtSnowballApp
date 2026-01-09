@@ -1,144 +1,105 @@
 ﻿using DebtSnowballApp.Data;
 using DebtSnowballApp.Models;
-using DebtSnowballApp.Areas.Admin.ViewModels; // to reuse UserEditVm
+using DebtSnowballApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
-namespace DebtSnowballApp.Controllers
+[Authorize] // just needs to be logged in
+public class ProfileController : Controller
 {
-    [Authorize]
-    public class ProfileController : Controller
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public ProfileController(UserManager<ApplicationUser> userManager)
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _db;
+        _userManager = userManager;
+    }
 
-        public ProfileController(
-            UserManager<ApplicationUser> userManager,
-            ApplicationDbContext db)
+    // GET: /Profile/Edit
+    [HttpGet]
+    public async Task<IActionResult> Edit()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge(); // not logged in (shouldn't happen with [Authorize])
+
+        var vm = new UserEditVm
         {
-            _userManager = userManager;
-            _db = db;
+            Id = user.Id,
+            Email = user.Email ?? "",
+            UserName = user.UserName ?? "",
+            PartnerId = user.PartnerId,
+
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Address1 = user.Address1,
+            Address2 = user.Address2,
+            City = user.City,
+            State = user.State,
+            PostalCode = user.PostalCode,
+            Country = user.Country,
+
+            PreferredStrategy = user.PreferredStrategy,
+            PreferredMonthlyBudget = user.PreferredMonthlyBudget,
+
+            // self-service shouldn’t touch these
+            Role = null,
+            Locked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow
+        };
+
+        return View(vm);
+    }
+
+    // POST: /Profile/Edit
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(UserEditVm model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
         }
 
-        // GET: /Profile/Edit
-        [HttpGet]
-        public async Task<IActionResult> Edit()
+        // always load the current user from the ClaimsPrincipal, 
+        // don't trust the Id coming from the form
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        // optional: extra safety – if someone posts a different Id, reject
+        if (user.Id != model.Id)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Challenge(); // not logged in
-
-            // map ApplicationUser -> UserEditVm (we'll ignore admin-only bits)
-            var vm = new UserEditVm
-            {
-                Id = user.Id,
-                Email = user.Email ?? "",
-                UserName = user.UserName ?? "",
-                PartnerId = user.PartnerId,
-
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Address1 = user.Address1,
-                Address2 = user.Address2,
-                City = user.City,
-                State = user.State,
-                PostalCode = user.PostalCode,
-                Country = user.Country,
-
-                PreferredStrategy = user.PreferredStrategy,
-                PreferredMonthlyBudget = user.PreferredMonthlyBudget,
-
-                // these are admin-ish; we can hide them in the view
-                Role = null,
-                Locked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow
-            };
-
-            // if you want partner dropdown for the user, you can reuse your helper
-            vm.Partners = await _db.Partners
-                .OrderBy(p => p.SortOrder)
-                .ThenBy(p => p.Name)
-                .Select(p => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                {
-                    Text = p.Name,
-                    Value = p.Id.ToString(),
-                    Selected = (user.PartnerId.HasValue && p.Id == user.PartnerId.Value)
-                })
-                .ToListAsync();
-
-            return View(vm); // Views/Profile/Edit.cshtml
+            return Forbid();
         }
 
-        // POST: /Profile/Edit
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(UserEditVm vm)
+        // fields a normal user is allowed to change
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        user.Address1 = model.Address1;
+        user.Address2 = model.Address2;
+        user.City = model.City;
+        user.State = model.State;
+        user.PostalCode = model.PostalCode;
+        user.Country = model.Country;
+
+        user.PreferredStrategy = model.PreferredStrategy;
+        user.PreferredMonthlyBudget = model.PreferredMonthlyBudget;
+
+        // Email / UserName: only if you want users to edit them
+        user.Email = model.Email;
+        user.UserName = model.UserName;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Challenge();
-
-            // Ensure the posted Id matches the currently logged in user
-            if (vm.Id != user.Id)
-                return Forbid(); // prevent tampering
-
-            if (!ModelState.IsValid)
+            foreach (var error in result.Errors)
             {
-                vm.Partners = await _db.Partners
-                    .OrderBy(p => p.SortOrder)
-                    .ThenBy(p => p.Name)
-                    .Select(p => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Text = p.Name,
-                        Value = p.Id.ToString(),
-                        Selected = (user.PartnerId.HasValue && p.Id == user.PartnerId.Value)
-                    })
-                    .ToListAsync();
-
-                return View(vm);
+                ModelState.AddModelError(string.Empty, error.Description);
             }
-
-            // allowed fields for self-edit
-            user.Email = vm.Email;
-            user.UserName = vm.UserName;
-            user.PartnerId = vm.PartnerId;
-
-            user.FirstName = vm.FirstName;
-            user.LastName = vm.LastName;
-            user.Address1 = vm.Address1;
-            user.Address2 = vm.Address2;
-            user.City = vm.City;
-            user.State = vm.State;
-            user.PostalCode = vm.PostalCode;
-            user.Country = vm.Country;
-
-            user.PreferredStrategy = vm.PreferredStrategy;
-            user.PreferredMonthlyBudget = vm.PreferredMonthlyBudget;
-
-            // DO NOT touch Lockout, roles, etc. here – those belong to Admin
-
-            var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-            {
-                foreach (var err in result.Errors)
-                    ModelState.AddModelError(string.Empty, err.Description);
-
-                vm.Partners = await _db.Partners
-                    .OrderBy(p => p.SortOrder)
-                    .ThenBy(p => p.Name)
-                    .Select(p => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                    {
-                        Text = p.Name,
-                        Value = p.Id.ToString(),
-                        Selected = (user.PartnerId.HasValue && p.Id == user.PartnerId.Value)
-                    })
-                    .ToListAsync();
-
-                return View(vm);
-            }
-
-            TempData["Toast"] = "Profile updated.";
-            // send them somewhere – dashboard, debts list, etc.
-            return RedirectToAction("Index", "Home");
+            return View(model);
         }
+
+        TempData["ProfileUpdated"] = "Your profile has been updated.";
+        return RedirectToAction(nameof(Edit));
     }
 }

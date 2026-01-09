@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
+﻿using DebtSnowballApp.Data;
+using DebtSnowballApp.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using DebtSnowballApp.Data;
-using DebtSnowballApp.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace DebtSnowballApp.Areas.Identity.Pages.Account
 {
@@ -18,17 +19,20 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            ApplicationDbContext context)
+           ApplicationDbContext context,
+           IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _context = context;
+            _emailSender = emailSender;
         }
 
         // 👇 THIS is the Input property you must have defined at class level
@@ -38,7 +42,7 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
         public string? ReturnUrl { get; set; }
 
         public IList<AuthenticationScheme> ExternalLogins { get; set; } = new List<AuthenticationScheme>();
-
+        public bool EmailAlreadyExists { get; set; }
         public class InputModel
         {
             [Required]
@@ -128,8 +132,17 @@ namespace DebtSnowballApp.Areas.Identity.Pages.Account
             {
                 return Page();
             }
+            // 🔹 STOP: does this email already have an account?
+            var existingUser = await _userManager.FindByEmailAsync(Input.Email);
+            if (existingUser != null)
+            {
+                EmailAlreadyExists = true;
+                ModelState.AddModelError(string.Empty,
+                    "An account already exists with this email address. Please log in instead.");
+                return Page();
+            }
 
-            var user = new ApplicationUser
+                var user = new ApplicationUser
             {
                 UserName = Input.Email,
                 Email = Input.Email,

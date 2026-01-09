@@ -47,7 +47,11 @@
                     <hr class="my-4" />
 
                     <h2 class="h5 text-center mb-3">New here? Create an account</h2>
-                    <a href="#" id="registerLink">Register as a new user</a>
+                    <a asp-page="./Register"
+                       asp-route-email="@Model.Input?.LoginInput"
+                       id="registerLink">
+                        Register as a new user
+                    </a>
 
 
                     @if (Model.ExternalLogins != null && Model.ExternalLogins.Count > 0)
@@ -66,33 +70,34 @@
                         </div>
                     }
                 </div>
-                          </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+        <partial name="_ValidationScriptsPartial" />
 
-    <script>
-        (function () {
-            const registerLink = document.getElementById('registerLink');
-            if (!registerLink) return;
+        <script>
+            (function () {
+                const registerLink = document.getElementById('registerLink');
+                if (!registerLink) return;
 
-            registerLink.addEventListener('click', function (e) {
-                e.preventDefault();
+                registerLink.addEventListener('click', function (e) {
+                    e.preventDefault();
 
-                const emailInput= document.getElementById('Input_LoginInput');
-                const email = emailInput ? emailInput.value.trim() : "";
-                console.log(emailInput);
-                // 👇 Force no area (root controllers)
-                let url = '@Url.Action("Step4Order", "QuickAnalysis", new { area = "" })';
+                    const emailInput= document.getElementById('Input_LoginInput');
+                    const email = emailInput ? emailInput.value.trim() : "";
+                    console.log(emailInput);
+                    // 👇 Force no area (root controllers)
+                    let url = '@Url.Action("Step4Order", "QuickAnalysis", new { area = "" })';
 
-                if (email) {
-                    url += '?email=' + encodeURIComponent(email);
-                }
+                    if (email) {
+                        url += '?email=' + encodeURIComponent(email);
+                    }
 
-                window.location.href = url;
-            });
-        })();
-    </script>
+                    window.location.href = url;
+                });
+            })();
+        </script>
 }

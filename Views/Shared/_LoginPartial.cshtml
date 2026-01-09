@@ -2,32 +2,80 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
-	@if (SignInManager.IsSignedIn(User))
-	{
-		<li class="nav-item">
-			<a class="nav-link text-white fw-bold" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Welcome @User.Identity?.Name</a>
-		</li>
-		@if (User.IsInRole("Admin"))
-		{
-			<li class="nav-item">
-				<a class="nav-link text-white fw-bold" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
-			</li>
-		}
-		<li class="nav-item">
-			<form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-				<button type="submit" class="nav-link btn btn-link text-white fw-bold">Logout</button>
-			</form>
-		</li>
-	}
-	else
-	{
-		<li class="nav-item">
-			<a class="nav-link text-white fw-bold" asp-area="Identity" asp-page="/Account/Register">Register</a>
-		</li>
-		<li class="nav-item">
-			<a class="nav-link text-white fw-bold" asp-area="Identity" asp-page="/Account/Login">Login</a>
-		</li>
+@{
+    string displayName = null;
+    if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        displayName = !string.IsNullOrWhiteSpace(currentUser?.FirstName)
+            ? currentUser.FirstName
+            : currentUser?.UserName;
+    }
+}
 
-	}
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white fw-bold"
+               href="#" role="button"
+               data-bs-toggle="dropdown"
+               aria-expanded="false">
+                Welcome @displayName
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Profile"
+                       asp-action="Edit">
+                        My Profile
+                    </a>
+                </li>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a class="dropdown-item"
+                           asp-area="Admin"
+                           asp-controller="Dashboard"
+                           asp-action="Index">
+                            Admin Dashboard
+                        </a>
+                    </li>
+                }
+
+                <li><hr class="dropdown-divider"></li>
+
+                <li>
+                    <form class="dropdown-item m-0 p-0"
+                          asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button type="submit"
+                                class="btn btn-link dropdown-item text-start w-100">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+@*         <li class="nav-item">
+            <a class="nav-link text-white fw-bold"
+               asp-area="Identity"
+               asp-page="/Account/Register">
+                Register
+            </a>
+         </li>*@
+        <li class="nav-item">
+            <a class="nav-link text-white fw-bold"
+               asp-area="Identity"
+               asp-page="/Account/Login">
+                Login
+            </a>
+        </li>
+    }
 </ul>
