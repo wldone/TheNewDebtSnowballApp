@@ -1,13 +1,14 @@
 ﻿using DebtSnowballApp.Data;
 using DebtSnowballApp.Models;
 using DebtSnowballApp.Services;
+using Microsoft.AspNetCore.Http;
 //using DebtSnowballApp.ViewModels.QuickAnalysisViewModel;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Text.Json;
 
 public class QuickAnalysisController : Controller
@@ -60,10 +61,11 @@ public class QuickAnalysisController : Controller
     {
         return HttpContext.Session.GetString(QaEmailSessionKey);
     }
-
+    // I'm here 12/18 6pm*********************************
     [HttpGet]
     public async Task<IActionResult> Step1Personal()
     {
+        HttpContext.Session.Clear();
         var id = GetCurrentId();
 
         var existing = await _context.QuickAnalysisPersonals
@@ -321,21 +323,45 @@ public class QuickAnalysisController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Step3Next()
     {
-         var ownerId = GetCurrentId();                    // same helper you use in Step1/2
-       var model = await _quickCalc.CalculateAsync(ownerId); if (model == null)
+        var ownerId = GetCurrentId();                    // same helper you use in Step1/2
+        var model = await _quickCalc.CalculateAsync(ownerId);
+        if (model == null)
             return RedirectToAction(nameof(Step2Debts));   // or some error page
 
         var email = model.ClientEmail;   // ⬅️ from Step 1
+
         if (!string.IsNullOrWhiteSpace(email))
         {
-            string subject = "Your Quick Analysis Results – My Financial Outlook";
-            string bodyHtml = EmailBuilder.BuildStep3EmailBody(model);
+            HttpContext.Session.SetString("QA_Email", email);
 
-            //await _emailService.SendAsync(email, subject, bodyHtml);
+            // OPTIONAL: keep name too, if it’s on the model
+            //if (!string.IsNullOrWhiteSpace(model.))
+            //    HttpContext.Session.SetString("QA_FirstName", model.ClientFirstName);
+
+            //if (!string.IsNullOrWhiteSpace(model.ClientLastName))
+            //    HttpContext.Session.SetString("QA_LastName", model.ClientLastName);
+
+            // does this email already have an Identity account?
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                // You can still send the Step 3 email here if you want:
+                // string subject = "Your Quick Analysis Results – My Financial Outlook";
+                // string bodyHtml = EmailBuilder.BuildStep3EmailBody(model);
+                // await _emailService.SendAsync(email, subject, bodyHtml);
+
+                // skip Step4Order: go straight to ThankYou, which will show Login
+                return RedirectToAction("Step4ThankYou");
+            }
+
+            // If you only want to send the email for NEW users, keep it here:
+            // string subject = "Your Quick Analysis Results – My Financial Outlook";
+            // string bodyHtml = EmailBuilder.BuildStep3EmailBody(model);
+            // await _emailService.SendAsync(email, subject, bodyHtml);
         }
-
-        return RedirectToAction(nameof(Step4Order));
+        return RedirectToAction("Step4Order");       //await _emailService.SendAsync(email, subject, bodyHtml);
     }
+
 
     [HttpPost]
     [ValidateAntiForgeryToken]
@@ -345,34 +371,54 @@ public class QuickAnalysisController : Controller
     }
 
     [HttpGet]
-    public IActionResult Step4Order(string? email)
+    public async Task<IActionResult> Step4Order(string? email)
     {
-        // 1. If email passed via query string, store in session
-        if (!string.IsNullOrWhiteSpace(email))
+        // Prefer explicit email, fall back to session
+        var effectiveEmail = !string.IsNullOrWhiteSpace(email)
+            ? email
+            : HttpContext.Session.GetString("QA_Email");
+
+        if (!string.IsNullOrWhiteSpace(effectiveEmail))
         {
-            HttpContext.Session.SetString("QA_Email", email);
+            // keep it in session so ThankYou page, Register, etc. can use it
+            HttpContext.Session.SetString("QA_Email", effectiveEmail);
+
+            var existingUser = await _userManager.FindByEmailAsync(effectiveEmail);
+            if (existingUser != null)
+            {
+                // Email already has an account: skip order page
+                return RedirectToAction("Step4ThankYou");
+            }
         }
 
-        // 2. Pull from session (this ensures a single source of truth)
-        var sessionEmail = HttpContext.Session.GetString("QA_Email");
-        var fullName = HttpContext.Session.GetString("QA_FullName");
-
-        // 3. Create the viewmodel
         var vm = new QuickAnalysisOrderViewModel
         {
-            NameOnCard = fullName ?? string.Empty,
+            Email = effectiveEmail ?? string.Empty,
             ExpirationMonth = DateTime.UtcNow.Month,
-            ExpirationYear = DateTime.UtcNow.Year,
-            Email = sessionEmail // optional, only if your view model has Email
+            ExpirationYear = DateTime.UtcNow.Year
         };
 
         return View(vm);
     }
 
+
+
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Step4Order(QuickAnalysisOrderViewModel model)
+    public async Task<IActionResult> Step4Order(QuickAnalysisOrderViewModel model)
     {
+        var email = HttpContext.Session.GetString("QA_Email");
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var existingUser = await _userManager.FindByEmailAsync(email);
+
+            if (existingUser != null)
+            {
+                // Defensive: if somehow they got here with an existing email,
+                // skip charging / saving order and go straight to Thank You.
+                return RedirectToAction("Step4ThankYou");
+            }
+        }
         if (!ModelState.IsValid)
             return View(model);
 
@@ -382,11 +428,21 @@ public class QuickAnalysisController : Controller
     }
 
     [HttpGet]
-    public IActionResult Step4ThankYou()
+    public async Task<IActionResult> Step4ThankYou()
     {
         var email = HttpContext.Session.GetString("QA_Email");
         var clientName = HttpContext.Session.GetString("QA_FullName");
-
+        if (!string.IsNullOrEmpty(email))
+        {
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            ViewBag.QA_Email = email;
+            ViewBag.EmailAlreadyHasAccount = (existingUser != null);
+        }
+        else
+        {
+            ViewBag.QA_Email = null;
+            ViewBag.EmailAlreadyHasAccount = false;
+        }
         var vm = new QuickAnalysisOrderViewModel
         {
             NameOnCard = clientName ?? string.Empty,

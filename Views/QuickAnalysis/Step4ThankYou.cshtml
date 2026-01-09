@@ -2,57 +2,113 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @model DebtSnowballApp.Models.QuickAnalysisOrderViewModel
+
 @{
     ViewData["Title"] = "Thank You!";
+
+    var email = ViewBag.QA_Email as string;
+    bool emailHasAccount = (ViewBag.EmailAlreadyHasAccount as bool?) ?? false;
+
     var firstName = HttpContextAccessor.HttpContext?.Session.GetString("QA_FirstName");
     var lastName = HttpContextAccessor.HttpContext?.Session.GetString("QA_LastName");
 
+    var effectiveEmail = !string.IsNullOrWhiteSpace(email)
+        ? email
+        : Model?.Email;
+
+    var displayName = !string.IsNullOrWhiteSpace(Model?.NameOnCard)
+        ? Model.NameOnCard
+        : $"{firstName} {lastName}".Trim();
 }
 
 <div class="container py-5 quick-analysis" style="max-width: 760px;">
 
     <div class="text-center mb-4 fw-semibold">
         <h2 class="fw-bold mb-3">Thank You!</h2>
-        @if (!string.IsNullOrWhiteSpace(Model.NameOnCard))
+
+        @if (!string.IsNullOrWhiteSpace(displayName))
         {
-            <h2 class="fw-bold mb-3">@Model.NameOnCard.</h2>
+            <h2 class="fw-bold mb-3">@displayName</h2>
         }
 
-        <p class="mb-2 fs-5">
-            Your 7-day free trial is now active.
-        </p>
-        @if (!string.IsNullOrWhiteSpace(Model.Email))
+        @* HEADER TEXT CHANGES BASED ON WHETHER USER ALREADY EXISTS *@
+        @if (emailHasAccount)
         {
-            <p class="text-muted">We’ll use @Model.Email for your account setup.</p>
-        }
-        <p class="mb-4">
-            We're excited to help you take control of your finances and begin your journey
-            toward debt-freedom and long-term wealth.
-        </p>
+            <p class="mb-2 fs-5">
+                Your Quick Analysis results are ready.
+            </p>
 
+            @if (!string.IsNullOrWhiteSpace(effectiveEmail))
+            {
+                <p class="text-muted">
+                    You're already registered with <strong>@effectiveEmail</strong>. Use this email to log in and view your results.
+                </p>
+            }
+
+            <p class="mb-4">
+                Once you're logged in, you can review these results, track your progress,
+                and continue building your personalized payoff plan.
+            </p>
+        }
+        else
+        {
+            <p class="mb-2 fs-5">
+                Your 7-day free trial is now active.
+            </p>
+
+            @if (!string.IsNullOrWhiteSpace(effectiveEmail))
+            {
+                <p class="text-muted">
+                    We’ll use @effectiveEmail for your account setup.
+                </p>
+            }
+
+            <p class="mb-4">
+                We're excited to help you take control of your finances and begin your journey
+                toward debt-freedom and long-term wealth.
+            </p>
+        }
     </div>
 
     <div class="card shadow-sm border-0 mx-auto" style="max-width: 540px;">
         <div class="card-body p-4 text-center">
             <h5 class="fw-semibold mb-2">Next Steps</h5>
-            <p class="text-muted mb-4">
-                You're all set! Use your new financial tools to track progress, analyze debts,
-                and build your personalized payoff plan.
-            </p>
 
-            <div class="d-flex justify-content-center gap-3">
+            @if (emailHasAccount && !string.IsNullOrWhiteSpace(effectiveEmail))
+            {
+                <p class="text-muted mb-4">
+                    You already have a My Financial Outlook account. Log in to see these
+                    Quick Analysis results in your dashboard and keep working on your payoff plan.
+                </p>
+
+                <div class="alert alert-info text-start">
+                    It looks like <strong>@effectiveEmail</strong> already has an account.
+                    Please log in to continue.
+                </div>
+
+                <a asp-area="Identity"
+                   asp-page="/Account/Login"
+                   asp-route-returnUrl="~/"
+                   class="btn btn-success mt-3">
+                    Log In to My Account
+                </a>
+            }
+            else
+            {
+                <p class="text-muted mb-4">
+                    You're all set! Use your new financial tools to track progress, analyze
+                    debts, and build your personalized payoff plan.
+                </p>
 
                 <form method="get"
                       asp-area="Identity"
                       asp-page="/Account/Register">
 
-                    @* Pass email to the Identity Register page if we have it *@
-                    @if (!string.IsNullOrWhiteSpace(Model.Email))
+                    @if (!string.IsNullOrWhiteSpace(effectiveEmail))
                     {
-                        <input type="hidden" name="email" value="@Model.Email" />
+                        <input type="hidden" name="email" value="@effectiveEmail" />
                     }
 
-                    @* Pass first + last name from session *@
                     @if (!string.IsNullOrWhiteSpace(firstName))
                     {
                         <input type="hidden" name="firstName" value="@firstName" />
@@ -67,8 +123,8 @@
                         Create My Full Account
                     </button>
                 </form>
+            }
 
-            </div>
         </div>
     </div>
 

@@ -134,6 +134,15 @@ app.UseRouting();
 app.UseSession();           
 app.UseAuthentication();
 app.UseAuthorization();
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        // Force sign-out every time the server starts
+        context.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+        await next();
+    });
+}
 
 // --- Routes ---
 // Areas first, with a sane default controller (Home) and action (Index)

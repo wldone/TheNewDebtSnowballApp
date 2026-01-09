@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using DebtSnowballApp.Models; // for PayoffStrategy
+using DebtSnowballApp.Models;
 
-namespace DebtSnowballApp.Areas.Admin.ViewModels
+namespace DebtSnowballApp.ViewModels
 {
     public class UserEditVm
     {

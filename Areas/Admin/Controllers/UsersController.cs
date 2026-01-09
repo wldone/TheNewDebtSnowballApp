@@ -2,6 +2,7 @@
 using DebtSnowballApp.Areas.Admin.ViewModels;
 using DebtSnowballApp.Data;
 using DebtSnowballApp.Models;
+using DebtSnowballApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
